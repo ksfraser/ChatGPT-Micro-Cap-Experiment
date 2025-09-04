@@ -1,0 +1,96 @@
+# Job Processing Configuration
+# Configuration for distributed background job processing system
+
+job_processor:
+  # Worker Configuration
+  worker:
+    # Unique worker ID (auto-generated if not specified)
+    worker_id: null
+    
+    # Worker name/description
+    name: "Default Worker"
+    
+    # Maximum number of concurrent jobs this worker can handle
+    max_concurrent_jobs: 3
+    
+    # Job types this worker can process (empty = all types)
+    supported_job_types: []
+    
+    # Worker capabilities/tags for job routing
+    capabilities: ["technical_analysis", "price_updates", "data_import"]
+    
+    # Polling interval for new jobs (seconds)
+    poll_interval: 5
+    
+    # Maximum job execution time before timeout (seconds)
+    max_execution_time: 3600
+    
+    # Worker heartbeat interval (seconds)
+    heartbeat_interval: 30
+    
+  # Queue Configuration
+  queue:
+    # Queue backend: "database", "redis", "rabbitmq", "mqtt"
+    backend: "database"
+    
+    # Redis configuration (if using redis backend)
+    redis:
+      host: localhost
+      port: 6379
+      password: null
+      database: 0
+      
+    # RabbitMQ configuration (if using rabbitmq backend)
+    rabbitmq:
+      host: localhost
+      port: 5672
+      username: guest
+      password: guest
+      vhost: "/"
+      
+    # MQTT/Mosquitto configuration (if using mqtt backend)
+    mqtt:
+      host: localhost
+      port: 1883
+      username: null      # Optional MQTT username
+      password: null      # Optional MQTT password  
+      keepalive: 60      # Keep-alive interval in seconds
+      client_id_prefix: "stockworker"
+      
+  # Job Configuration
+  jobs:
+    # Default job priority (1-10, higher = more priority)
+    default_priority: 5
+    
+    # Job retry configuration
+    max_retries: 3
+    retry_delay: 60  # seconds
+    
+    # Job cleanup - remove completed jobs after X days
+    cleanup_after_days: 30
+    
+  # Logging
+  logging:
+    # Log level: DEBUG, INFO, WARNING, ERROR
+    level: INFO
+    
+    # Log file location
+    file: logs/job_processor.log
+    
+    # Log rotation
+    max_size: 10MB
+    backup_count: 5
+    
+  # Monitoring
+  monitoring:
+    # Enable metrics collection
+    enabled: true
+    
+    # Metrics export format: "prometheus", "json"
+    format: "json"
+    
+    # Metrics endpoint port (0 = disabled)
+    port: 8080
+    
+    # Health check endpoint
+    health_check_enabled: true

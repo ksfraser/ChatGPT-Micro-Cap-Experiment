@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Processing Monitor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .worker-card {
+            transition: all 0.3s ease;
+        }
+        .worker-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .status-online { color: #28a745; }
+        .status-offline { color: #dc3545; }
+        .status-warning { color: #ffc107; }
+        .refresh-indicator {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .refresh-indicator.active {
+            opacity: 1;
+        }
+        .job-row.completed { background-color: #d4edda; }
+        .job-row.failed { background-color: #f8d7da; }
+        .job-row.running { background-color: #d1ecf1; }
+        .job-row.pending { background-color: #fff3cd; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-chart-line me-2"></i>
+                Job Processing Monitor
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text">
+                    <i class="fas fa-sync-alt refresh-indicator" id="refreshIndicator"></i>
+                    Last updated: <span id="lastUpdated">Never</span>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- System Overview -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            System Overview
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-primary" id="totalWorkers">0</h3>
+                                    <small class="text-muted">Active Workers</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-warning" id="pendingJobs">0</h3>
+                                    <small class="text-muted">Pending Jobs</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-info" id="runningJobs">0</h3>
+                                    <small class="text-muted">Running Jobs</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-success" id="completedToday">0</h3>
+                                    <small class="text-muted">Completed Today</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workers and Queue Status -->
+        <div class="row mb-4">
+            <!-- Active Workers -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-server me-2"></i>
+                            Active Workers
+                        </h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshWorkers()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="workersContainer">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Queue Status -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Queue Status
+                        </h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshQueues()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="queuesContainer">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Statistics Chart -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Job Statistics (Last 24 Hours)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="jobStatsChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Jobs -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-history me-2"></i>
+                            Recent Jobs
+                        </h5>
+                        <div>
+                            <button class="btn btn-sm btn-success me-2" onclick="addTestJob('technical_analysis')">
+                                <i class="fas fa-plus"></i> Add TA Job
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="refreshJobs()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Job ID</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Worker</th>
+                                        <th>Progress</th>
+                                        <th>Created</th>
+                                        <th>Duration</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="jobsTableBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center py-3">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Logs -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-file-alt me-2"></i>
+                            System Logs
+                        </h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary me-2" onclick="clearLogs()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="refreshLogs()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="logsContainer" style="height: 300px; overflow-y: auto; background-color: #f8f9fa; padding: 10px; font-family: monospace; font-size: 12px;">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let jobStatsChart = null;
+        let refreshInterval = null;
+        let autoRefresh = true;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeChart();
+            startAutoRefresh();
+            loadAllData();
+        });
+
+        // Initialize job statistics chart
+        function initializeChart() {
+            const ctx = document.getElementById('jobStatsChart').getContext('2d');
+            jobStatsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Completed',
+                            data: [],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Failed',
+                            data: [],
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Running',
+                            data: [],
+                            borderColor: '#17a2b8',
+                            backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Start auto refresh
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                if (autoRefresh) {
+                    loadAllData();
+                }
+            }, 5000); // Refresh every 5 seconds
+        }
+
+        // Show refresh indicator
+        function showRefreshIndicator() {
+            const indicator = document.getElementById('refreshIndicator');
+            indicator.classList.add('active');
+            indicator.style.animation = 'spin 1s linear infinite';
+        }
+
+        // Hide refresh indicator
+        function hideRefreshIndicator() {
+            const indicator = document.getElementById('refreshIndicator');
+            indicator.classList.remove('active');
+            indicator.style.animation = '';
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+        }
+
+        // Load all dashboard data
+        function loadAllData() {
+            showRefreshIndicator();
+            Promise.all([
+                loadOverview(),
+                loadWorkers(),
+                loadQueues(),
+                loadJobs(),
+                loadJobStats(),
+                loadLogs()
+            ]).finally(() => {
+                hideRefreshIndicator();
+            });
+        }
+
+        // Load system overview
+        async function loadOverview() {
+            try {
+                const response = await fetch('monitor_api.php?action=overview');
+                const data = await response.json();
+                
+                document.getElementById('totalWorkers').textContent = data.active_workers || 0;
+                document.getElementById('pendingJobs').textContent = data.pending_jobs || 0;
+                document.getElementById('runningJobs').textContent = data.running_jobs || 0;
+                document.getElementById('completedToday').textContent = data.completed_today || 0;
+            } catch (error) {
+                console.error('Error loading overview:', error);
+            }
+        }
+
+        // Load workers
+        async function loadWorkers() {
+            try {
+                const response = await fetch('monitor_api.php?action=workers');
+                const workers = await response.json();
+                
+                const container = document.getElementById('workersContainer');
+                
+                if (workers.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted py-3">No active workers</div>';
+                    return;
+                }
+                
+                const workersHtml = workers.map(worker => {
+                    const statusClass = getWorkerStatusClass(worker.status);
+                    const statusIcon = getWorkerStatusIcon(worker.status);
+                    const lastHeartbeat = new Date(worker.last_heartbeat * 1000).toLocaleString();
+                    
+                    return `
+                        <div class="card worker-card mb-2">
+                            <div class="card-body py-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            ${statusIcon} ${worker.hostname}
+                                            <small class="text-muted">(${worker.id.split('_').pop()})</small>
+                                        </h6>
+                                        <small class="text-muted">
+                                            PID: ${worker.pid} | 
+                                            Jobs: ${worker.current_jobs}/${worker.max_concurrent_jobs} |
+                                            Last seen: ${lastHeartbeat}
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-secondary">${worker.job_types.join(', ')}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = workersHtml;
+            } catch (error) {
+                console.error('Error loading workers:', error);
+                document.getElementById('workersContainer').innerHTML = 
+                    '<div class="text-center text-danger py-3">Error loading workers</div>';
+            }
+        }
+
+        // Load queue status
+        async function loadQueues() {
+            try {
+                const response = await fetch('monitor_api.php?action=queues');
+                const queues = await response.json();
+                
+                const container = document.getElementById('queuesContainer');
+                
+                if (Object.keys(queues).length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted py-3">All queues empty</div>';
+                    return;
+                }
+                
+                const queuesHtml = Object.entries(queues).map(([queueName, count]) => {
+                    const priorityClass = queueName.includes('high') ? 'danger' : 
+                                         queueName.includes('normal') ? 'warning' : 'info';
+                    
+                    return `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">${queueName}</span>
+                            <span class="badge bg-${priorityClass}">${count} jobs</span>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = queuesHtml;
+            } catch (error) {
+                console.error('Error loading queues:', error);
+                document.getElementById('queuesContainer').innerHTML = 
+                    '<div class="text-center text-danger py-3">Error loading queues</div>';
+            }
+        }
+
+        // Load recent jobs
+        async function loadJobs() {
+            try {
+                const response = await fetch('monitor_api.php?action=jobs&limit=20');
+                const jobs = await response.json();
+                
+                const tbody = document.getElementById('jobsTableBody');
+                
+                if (jobs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-3">No jobs found</td></tr>';
+                    return;
+                }
+                
+                const jobsHtml = jobs.map(job => {
+                    const statusBadge = getJobStatusBadge(job.status);
+                    const progress = job.progress || 0;
+                    const created = new Date(job.created_at * 1000).toLocaleString();
+                    const duration = calculateDuration(job.created_at, job.completed_at);
+                    
+                    return `
+                        <tr class="job-row ${job.status}">
+                            <td><code>${job.id.split('_').pop()}</code></td>
+                            <td>${job.job_type}</td>
+                            <td>${statusBadge}</td>
+                            <td>${job.worker_id ? job.worker_id.split('_').pop() : '-'}</td>
+                            <td>
+                                <div class="progress" style="height: 15px;">
+                                    <div class="progress-bar" style="width: ${progress}%">${progress}%</div>
+                                </div>
+                            </td>
+                            <td><small>${created}</small></td>
+                            <td><small>${duration}</small></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-info" onclick="viewJobDetails('${job.id}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                tbody.innerHTML = jobsHtml;
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+                document.getElementById('jobsTableBody').innerHTML = 
+                    '<tr><td colspan="8" class="text-center text-danger py-3">Error loading jobs</td></tr>';
+            }
+        }
+
+        // Load job statistics
+        async function loadJobStats() {
+            try {
+                const response = await fetch('monitor_api.php?action=job_stats');
+                const stats = await response.json();
+                
+                if (stats.labels && stats.data) {
+                    jobStatsChart.data.labels = stats.labels;
+                    jobStatsChart.data.datasets[0].data = stats.data.completed;
+                    jobStatsChart.data.datasets[1].data = stats.data.failed;
+                    jobStatsChart.data.datasets[2].data = stats.data.running;
+                    jobStatsChart.update();
+                }
+            } catch (error) {
+                console.error('Error loading job stats:', error);
+            }
+        }
+
+        // Load system logs
+        async function loadLogs() {
+            try {
+                const response = await fetch('monitor_api.php?action=logs&lines=50');
+                const logs = await response.json();
+                
+                const container = document.getElementById('logsContainer');
+                
+                if (logs.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted py-3">No logs available</div>';
+                    return;
+                }
+                
+                const logsHtml = logs.map(log => {
+                    const level = log.includes('[ERROR]') ? 'text-danger' : 
+                                 log.includes('[WARNING]') ? 'text-warning' : 
+                                 log.includes('[INFO]') ? 'text-info' : '';
+                    
+                    return `<div class="${level}">${escapeHtml(log)}</div>`;
+                }).join('');
+                
+                container.innerHTML = logsHtml;
+                container.scrollTop = container.scrollHeight;
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                document.getElementById('logsContainer').innerHTML = 
+                    '<div class="text-center text-danger py-3">Error loading logs</div>';
+            }
+        }
+
+        // Helper functions
+        function getWorkerStatusClass(status) {
+            switch (status) {
+                case 'active': return 'status-online';
+                case 'idle': return 'status-warning';
+                default: return 'status-offline';
+            }
+        }
+
+        function getWorkerStatusIcon(status) {
+            switch (status) {
+                case 'active': return '<i class="fas fa-circle status-online"></i>';
+                case 'idle': return '<i class="fas fa-circle status-warning"></i>';
+                default: return '<i class="fas fa-circle status-offline"></i>';
+            }
+        }
+
+        function getJobStatusBadge(status) {
+            switch (status) {
+                case 'completed': return '<span class="badge bg-success">Completed</span>';
+                case 'failed': return '<span class="badge bg-danger">Failed</span>';
+                case 'running': return '<span class="badge bg-info">Running</span>';
+                case 'pending': return '<span class="badge bg-warning">Pending</span>';
+                default: return '<span class="badge bg-secondary">Unknown</span>';
+            }
+        }
+
+        function calculateDuration(startTime, endTime) {
+            if (!startTime) return '-';
+            
+            const start = new Date(startTime * 1000);
+            const end = endTime ? new Date(endTime * 1000) : new Date();
+            const diff = Math.floor((end - start) / 1000);
+            
+            if (diff < 60) return `${diff}s`;
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ${diff % 60}s`;
+            return `${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Action functions
+        function refreshWorkers() {
+            loadWorkers();
+        }
+
+        function refreshQueues() {
+            loadQueues();
+        }
+
+        function refreshJobs() {
+            loadJobs();
+        }
+
+        function refreshLogs() {
+            loadLogs();
+        }
+
+        function clearLogs() {
+            if (confirm('Are you sure you want to clear the logs?')) {
+                fetch('monitor_api.php?action=clear_logs', { method: 'POST' })
+                    .then(() => loadLogs())
+                    .catch(error => console.error('Error clearing logs:', error));
+            }
+        }
+
+        async function addTestJob(jobType) {
+            try {
+                const response = await fetch('monitor_api.php?action=add_job', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        job_type: jobType,
+                        priority: 'normal',
+                        parameters: { test: true }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadJobs();
+                    loadOverview();
+                } else {
+                    alert('Failed to add job: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error adding test job:', error);
+                alert('Error adding test job');
+            }
+        }
+
+        function viewJobDetails(jobId) {
+            // This would open a modal or navigate to a detailed view
+            alert('Job details for: ' + jobId);
+        }
+
+        // Toggle auto refresh
+        function toggleAutoRefresh() {
+            autoRefresh = !autoRefresh;
+            console.log('Auto refresh:', autoRefresh ? 'enabled' : 'disabled');
+        }
+    </script>
+</body>
+</html>

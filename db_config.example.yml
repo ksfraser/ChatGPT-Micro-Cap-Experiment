@@ -1,0 +1,41 @@
+# Database Configuration
+# This file contains database connection settings for both micro-cap and legacy systems
+# Copy this file to db_config.yml and update with your actual credentials
+
+database:
+  # Main database connection
+  host: localhost
+  port: 3306
+  username: your_username
+  password: your_password
+  charset: utf8mb4
+  
+  # Micro-cap specific database
+  micro_cap:
+    database: micro_cap_trading
+    
+  # Legacy stock analysis database  
+  legacy:
+    database: stock_market_2
+    
+# API Configuration (for external data sources)
+apis:
+  alpha_vantage:
+    api_key: your_alpha_vantage_key
+    
+  yahoo_finance:
+    enabled: true
+    
+  twelve_data:
+    api_key: your_twelve_data_key
+
+# Application Settings
+app:
+  debug: false
+  timezone: America/New_York
+  cache_enabled: true
+  
+# Logging
+logging:
+  level: INFO
+  file: logs/stock_analysis.log
