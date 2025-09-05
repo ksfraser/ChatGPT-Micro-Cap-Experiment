@@ -6,6 +6,7 @@
  */
 
 require_once 'DatabaseConfig.php';
+require_once __DIR__ . '/JobLogger.php';
 
 require_once __DIR__ . '/src/IStockTableManager.php';
 
