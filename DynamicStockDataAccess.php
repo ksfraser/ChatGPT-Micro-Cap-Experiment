@@ -8,7 +8,7 @@
 require_once 'StockTableManager.php';
 require_once 'DatabaseConfig.php';
 
-class DynamicStockDataAccess
+class DynamicStockDataAccess implements IStockDataAccess
 {
     private $pdo;
     private $tableManager;
