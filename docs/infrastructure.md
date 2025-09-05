@@ -1,7 +1,7 @@
 # Infrastructure Overview
 
 ## System Architecture
-- **Language:** PHP 8+
+- **Language:** PHP 7.3+
 - **Database:** MySQL/MariaDB
 - **Queue:** MQTT (Mosquitto), with support for Redis, RabbitMQ, and DB
 - **Job Processing:** Distributed, multi-backend, with worker registration and monitoring
@@ -17,7 +17,7 @@
 - `/Experiment Details`, `/Weekly Deep Research (MD|PDF)` — Research and results
 
 ## Dependencies
-- PHP 8+
+- PHP 7.3+
 - Composer (for autoloading and PHPUnit)
 - MySQL/MariaDB
 - Mosquitto (MQTT broker)

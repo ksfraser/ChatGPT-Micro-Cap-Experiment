@@ -3,7 +3,7 @@
 # - Allows connection to external MySQL and MQ servers
 # - Optionally clones the GitHub repo during build
 
-FROM php:8.2-cli
+FROM php:7.3-cli
 
 # Install system dependencies
 RUN apt-get update && \

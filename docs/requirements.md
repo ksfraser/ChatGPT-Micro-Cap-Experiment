@@ -23,7 +23,6 @@
 - **Testability:** All business logic must be unit tested with PHPUnit.
 - **Documentation:** All scripts, classes, and APIs must be documented.
 
-## Constraints
-- PHP 8+, MySQL/MariaDB, Mosquitto (MQTT), Composer, PHPUnit
+- PHP 7.3+, MySQL/MariaDB, Mosquitto (MQTT), Composer, PHPUnit
 - Must run on Linux and Windows
 - Must support legacy and new code integration
