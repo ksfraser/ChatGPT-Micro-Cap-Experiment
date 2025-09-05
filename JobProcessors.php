@@ -8,11 +8,16 @@ abstract class AbstractJobProcessor
 {
     protected $logger;
     protected $pdo;
+    protected $stockDataAccess;
     
     public function __construct()
     {
         $this->pdo = DatabaseConfig::createLegacyConnection();
         $this->logger = new JobLogger('logs/job_processor.log');
+        
+        // Include dynamic data access
+        require_once __DIR__ . '/DynamicStockDataAccess.php';
+        $this->stockDataAccess = new DynamicStockDataAccess();
     }
     
     /**
@@ -83,54 +88,53 @@ class TechnicalAnalysisJobProcessor extends AbstractJobProcessor
     private function analyzeStock($stockId, $jobId)
     {
         require_once __DIR__ . '/Stock-Analysis-Extension/Legacy/vendor/autoload.php';
-        
+
         $stockModel = new \Ksfraser\StockInfo\StockInfo($this->pdo);
-        
+
         $stock = $stockModel->find($stockId);
         if (!$stock) {
             throw new Exception("Stock not found: {$stockId}");
         }
-        
-        $this->updateProgress($jobId, 10, "Analyzing {$stock['stocksymbol']}");
-        
-        // Get historical price data (this would typically come from your price data source)
-        $priceData = $this->getHistoricalPrices($stock['stocksymbol']);
-        
+
+        $symbol = $stock['stocksymbol'];
+        $this->updateProgress($jobId, 10, "Analyzing {$symbol}");
+
+        // Get historical price data using dynamic table system
+        $priceData = $this->stockDataAccess->getPriceDataForAnalysis($symbol, 200);
+
         if (empty($priceData)) {
-            throw new Exception("No price data available for {$stock['stocksymbol']}");
+            throw new Exception("No price data available for {$symbol}");
         }
-        
+
         $indicatorsCalculated = 0;
         $patternsDetected = 0;
-        
+
         // Calculate RSI
-        $this->updateProgress($jobId, 20, "Calculating RSI");
+        $this->updateProgress($jobId, 20, "Calculating RSI for {$symbol}");
         $rsiValues = $this->calculateRSI($priceData);
-        $indicatorsCalculated += $this->saveIndicators($stockId, $stock['stocksymbol'], 'RSI', $rsiValues);
-        
+        $indicatorsCalculated += $this->saveIndicators($symbol, 'RSI', $rsiValues);
+
         // Calculate MACD
-        $this->updateProgress($jobId, 40, "Calculating MACD");
+        $this->updateProgress($jobId, 40, "Calculating MACD for {$symbol}");
         $macdValues = $this->calculateMACD($priceData);
-        $indicatorsCalculated += $this->saveIndicators($stockId, $stock['stocksymbol'], 'MACD', $macdValues);
-        
+        $indicatorsCalculated += $this->saveIndicators($symbol, 'MACD', $macdValues);
+
         // Calculate Moving Averages
-        $this->updateProgress($jobId, 60, "Calculating Moving Averages");
+        $this->updateProgress($jobId, 60, "Calculating Moving Averages for {$symbol}");
         $smaValues = $this->calculateSMA($priceData, 20);
-        $indicatorsCalculated += $this->saveIndicators($stockId, $stock['stocksymbol'], 'SMA_20', $smaValues);
-        
+        $indicatorsCalculated += $this->saveIndicators($symbol, 'SMA_20', $smaValues);
+
         // Detect Candlestick Patterns
-        $this->updateProgress($jobId, 80, "Detecting Candlestick Patterns");
+        $this->updateProgress($jobId, 80, "Detecting Candlestick Patterns for {$symbol}");
         $patterns = $this->detectCandlestickPatterns($priceData);
-        $patternsDetected = $this->savePatterns($stockId, $stock['stocksymbol'], $patterns);
-        
+        $patternsDetected = $this->savePatterns($symbol, $patterns);
+
         return [
             'processed_stocks' => 1,
             'indicators_calculated' => $indicatorsCalculated,
             'patterns_detected' => $patternsDetected
         ];
-    }
-    
-    /**
+    }    /**
      * Analyze all active stocks
      */
     private function analyzeAllStocks($jobId)
@@ -169,22 +173,6 @@ class TechnicalAnalysisJobProcessor extends AbstractJobProcessor
      * Get historical price data for a stock
      * This is a placeholder - you would implement actual data fetching
      */
-    private function getHistoricalPrices($symbol)
-    {
-        // Placeholder implementation
-        // In reality, you would fetch from your price data source
-        // or integrate with Yahoo Finance, Alpha Vantage, etc.
-        
-        $this->logger->info("Fetching historical prices for {$symbol}");
-        
-        // Mock data for demonstration
-        return [
-            ['date' => '2024-01-01', 'open' => 100, 'high' => 105, 'low' => 98, 'close' => 103, 'volume' => 1000000],
-            ['date' => '2024-01-02', 'open' => 103, 'high' => 107, 'low' => 101, 'close' => 105, 'volume' => 1200000],
-            // ... more data points
-        ];
-    }
-    
     /**
      * Calculate RSI (Relative Strength Index)
      * Simplified implementation - you would use TA-Lib for production
@@ -306,66 +294,43 @@ class TechnicalAnalysisJobProcessor extends AbstractJobProcessor
     /**
      * Save calculated indicators to database
      */
-    private function saveIndicators($stockId, $symbol, $indicatorType, $values)
+    /**
+     * Save calculated indicators to database using dynamic table system
+     */
+    private function saveIndicators($symbol, $indicatorType, $values)
     {
         $saved = 0;
         
-        foreach ($values as $value) {
-            try {
-                $sql = "INSERT INTO technical_indicators 
-                        (idstockinfo, symbol, date, indicator_name, value, period, calculation_date)
-                        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-                        ON DUPLICATE KEY UPDATE 
-                        value = VALUES(value), calculation_date = VALUES(calculation_date)";
-                
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([
-                    $stockId,
-                    $symbol,
-                    $value['date'],
-                    $indicatorType,
-                    $value['value'],
-                    null // period can be derived from indicator type
+        foreach ($values as $date => $value) {
+            if ($value !== null) {
+                $this->stockDataAccess->insertTechnicalIndicator($symbol, [
+                    'indicator_type' => $indicatorType,
+                    'date' => $date,
+                    'value' => $value,
+                    'created_at' => date('Y-m-d H:i:s')
                 ]);
-                
                 $saved++;
-            } catch (Exception $e) {
-                $this->logger->warning("Failed to save indicator {$indicatorType} for {$symbol}: " . $e->getMessage());
             }
         }
         
         return $saved;
     }
-    
+
     /**
-     * Save detected patterns to database
+     * Save detected patterns to database using dynamic table system
      */
-    private function savePatterns($stockId, $symbol, $patterns)
+    private function savePatterns($symbol, $patterns)
     {
         $saved = 0;
         
-        foreach ($patterns as $pattern) {
-            try {
-                $sql = "INSERT INTO candlestick_patterns 
-                        (idstockinfo, symbol, date, pattern_name, strength, signal, detection_date)
-                        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-                        ON DUPLICATE KEY UPDATE 
-                        strength = VALUES(strength), signal = VALUES(signal), detection_date = VALUES(detection_date)";
-                
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([
-                    $stockId,
-                    $symbol,
-                    $pattern['date'],
-                    $pattern['pattern'],
-                    $pattern['strength'],
-                    $pattern['signal']
-                ]);
-                
-                $saved++;
-            } catch (Exception $e) {
-                $this->logger->warning("Failed to save pattern {$pattern['pattern']} for {$symbol}: " . $e->getMessage());
-            }
+        foreach ($patterns as $date => $pattern) {
+            $this->stockDataAccess->insertCandlestickPattern($symbol, [
+                'pattern_type' => $pattern['type'],
+                'date' => $date,
+                'confidence' => $pattern['confidence'],
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+            $saved++;
         }
         
         return $saved;
