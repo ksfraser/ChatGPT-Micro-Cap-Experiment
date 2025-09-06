@@ -35,28 +35,24 @@
     <?php QuickActions::render(); ?>
         </div>
         
-        <div class="card warning">
-            <h3>⚠️ PHP Database Limitations</h3>
-            <p>This PHP installation doesn't have MySQL database extensions enabled. For full portfolio functionality, use the Python backend:</p>
-            <?php require_once 'UiStyles.php'; ?>
-            <?php UiStyles::render(); ?>
-                    <p><strong>Purpose:</strong> CSV-mirrored original data</p>
-                    <p><strong>Data Directory:</strong> data_micro_cap/</p>
-                </div>
-                
-                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
-                    <h4>Blue-Chip Portfolio</h4>
-                    <p><strong>Database:</strong> stock_market_2</p>
-                    <p><strong>Purpose:</strong> Enhanced features</p>
-                    <p><strong>Data Directory:</strong> data_blue-chip_cap/</p>
-                </div>
-                
-                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
-                    <h4>Small-Cap Portfolio</h4>
-                    <p><strong>Database:</strong> stock_market_2</p>
-                    <p><strong>Purpose:</strong> Enhanced features</p>
-                    <p><strong>Data Directory:</strong> data_small_cap/</p>
-                </div>
+        <div class="card">
+            <h3>Portfolio Data Locations</h3>
+            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                <h4>Micro-Cap Portfolio</h4>
+                <p><strong>Purpose:</strong> CSV-mirrored original data</p>
+                <p><strong>Data Directory:</strong> data_micro_cap/</p>
+            </div>
+            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                <h4>Blue-Chip Portfolio</h4>
+                <p><strong>Database:</strong> stock_market_2</p>
+                <p><strong>Purpose:</strong> Enhanced features</p>
+                <p><strong>Data Directory:</strong> data_blue-chip_cap/</p>
+            </div>
+            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                <h4>Small-Cap Portfolio</h4>
+                <p><strong>Database:</strong> stock_market_2</p>
+                <p><strong>Purpose:</strong> Enhanced features</p>
+                <p><strong>Data Directory:</strong> data_small_cap/</p>
             </div>
         </div>
         
@@ -64,16 +60,45 @@
             <h3>Python Command Line Access</h3>
             <p>Use these commands to manage portfolios with full database integration:</p>
             <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace;">
-                <p><strong># View micro-cap portfolio</strong><br>
-                python enhanced_trading_script.py</p>
-                
-                <p><strong># Test database connections</strong><br>
-                python test_database_connection.py</p>
-                
-                <p><strong># Run enhanced automation</strong><br>
-                python enhanced_automation.py</p>
+                <div style="margin-bottom:10px;">
+                    <p><strong># View micro-cap portfolio</strong><br>
+                    <code>python ../enhanced_trading_script.py</code>
+                    <button class="btn btn-secondary" onclick="runPy('enhanced_trading_script', this)">Run</button></p>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <p><strong># Test database connections</strong><br>
+                    <code>python ../test_database_connection.py</code>
+                    <button class="btn btn-secondary" onclick="runPy('test_database_connection', this)">Run</button></p>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <p><strong># Run enhanced automation</strong><br>
+                    <code>python ../enhanced_automation.py</code>
+                    <button class="btn btn-secondary" onclick="runPy('enhanced_automation', this)">Run</button></p>
+                </div>
+                <div id="py-output" style="margin-top:10px; color:#333;"></div>
             </div>
         </div>
+        <script>
+        function runPy(cmdKey, btn) {
+            btn.disabled = true;
+            btn.innerText = 'Running...';
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'run_python_command.php');
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                btn.disabled = false;
+                btn.innerText = 'Run';
+                var out = document.getElementById('py-output');
+                try {
+                    var resp = JSON.parse(xhr.responseText);
+                    out.innerText = resp.output || resp.error || 'No output.';
+                } catch(e) {
+                    out.innerText = 'Error: ' + xhr.responseText;
+                }
+            };
+            xhr.send('command_key=' + encodeURIComponent(cmdKey));
+        }
+        </script>
         
         <div class="card">
             <h3>Quick Actions</h3>

@@ -12,6 +12,10 @@
         <?php QuickActions::render(); ?>
         <h1>Database Management</h1>
         
+        <div class="card warning">
+            <h3>⚠️ PHP Database Limitations</h3>
+            <p>This PHP installation doesn't have MySQL database extensions enabled. For full database management, use the Python backend or ensure PHP MySQL extensions are installed.</p>
+        </div>
         <div class="card">
             <h3>Database Architecture Overview</h3>
             <table>
