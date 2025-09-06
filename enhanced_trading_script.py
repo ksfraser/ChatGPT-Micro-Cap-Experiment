@@ -167,6 +167,9 @@ class EnhancedTradingEngine:
         # Set up CSV file paths
         self.portfolio_csv = self.data_dir / f"{self.market_cap_category}_cap_portfolio.csv"
         self.trade_log_csv = self.data_dir / f"{self.market_cap_category}_cap_trade_log.csv"
+
+        # Retry file for failed writes (per portfolio)
+        self.retry_file = self.data_dir / f".portfolio_write_retry_{self.market_cap_category}.json"
         
         # Initialize database manager
         self.db = DatabaseManager(config_file) if self.enable_database else None
@@ -178,6 +181,9 @@ class EnhancedTradingEngine:
         logger.info(f"Enhanced Trading Engine initialized for {market_cap_category} cap category")
         logger.info(f"Database enabled: {self.db_connected}")
         logger.info(f"Data directory: {self.data_dir}")
+
+        # Attempt retry if retry file exists
+        self._retry_failed_write()
     
     def __del__(self):
         """Cleanup database connections."""
@@ -185,18 +191,57 @@ class EnhancedTradingEngine:
             self.db.disconnect()
     
     def save_portfolio_data(self, portfolio_df: pd.DataFrame, cash: float, total_equity: float) -> bool:
-        """Save portfolio data to both CSV and database."""
+        """Save portfolio data to both CSV and database. On failure, save to retry file."""
         success = True
         today_iso = last_trading_date().date().isoformat()
-        
         # Always save to CSV for backward compatibility
-        success &= self._save_portfolio_csv(portfolio_df, cash, total_equity, today_iso)
-        
-        # Save to database if enabled
+        csv_ok = self._save_portfolio_csv(portfolio_df, cash, total_equity, today_iso)
+        db_ok = True
         if self.db_connected:
-            success &= self._save_portfolio_database(portfolio_df, cash, total_equity, today_iso)
-        
+            db_ok = self._save_portfolio_database(portfolio_df, cash, total_equity, today_iso)
+        success = csv_ok and db_ok
+        if not success:
+            # Save failed data to retry file
+            try:
+                retry_data = {
+                    'portfolio': portfolio_df.to_dict(orient='records'),
+                    'cash': cash,
+                    'total_equity': total_equity,
+                    'date': today_iso
+                }
+                with open(self.retry_file, 'w') as f:
+                    json.dump(retry_data, f)
+                logger.error(f"Portfolio write failed. Data saved for retry in {self.retry_file}")
+            except Exception as e:
+                logger.error(f"Failed to save retry file: {e}")
+        else:
+            # Clean up retry file if successful
+            if self.retry_file.exists():
+                try:
+                    self.retry_file.unlink()
+                except Exception as e:
+                    logger.warning(f"Could not remove retry file: {e}")
         return success
+
+    def _retry_failed_write(self):
+        """If a retry file exists, attempt to re-save the failed data."""
+        if self.retry_file.exists():
+            try:
+                with open(self.retry_file, 'r') as f:
+                    retry_data = json.load(f)
+                logger.info(f"Retrying failed portfolio write from {self.retry_file}")
+                df = pd.DataFrame(retry_data['portfolio'])
+                cash = retry_data['cash']
+                total_equity = retry_data['total_equity']
+                # Try again
+                ok = self.save_portfolio_data(df, cash, total_equity)
+                if ok:
+                    logger.info("Retry successful. Removing retry file.")
+                    self.retry_file.unlink()
+                else:
+                    logger.error("Retry failed. Data remains in retry file.")
+            except Exception as e:
+                logger.error(f"Error during retry: {e}")
     
     def _save_portfolio_csv(self, portfolio_df: pd.DataFrame, cash: float, total_equity: float, date: str) -> bool:
         """Save portfolio data to CSV file (maintains original format)."""

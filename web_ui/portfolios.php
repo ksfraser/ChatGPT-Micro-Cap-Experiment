@@ -42,7 +42,8 @@
                 <p><strong>Purpose:</strong> CSV-mirrored original data</p>
                 <p><strong>Data Directory:</strong> data_micro_cap/</p>
                 <?php
-                // Show latest micro-cap portfolio from CSV
+                // Use generalized PortfolioDAO for micro-cap
+                require_once __DIR__ . '/PortfolioDAO.php';
                 $csvPaths = [
                     '../Scripts and CSV Files/chatgpt_portfolio_update.csv',
                     '../Start Your Own/chatgpt_portfolio_update.csv',
@@ -50,32 +51,46 @@
                 ];
                 $csvFile = null;
                 foreach ($csvPaths as $p) { if (file_exists($p)) { $csvFile = $p; break; } }
-                if ($csvFile) {
-                    $rows = array_map('str_getcsv', file($csvFile));
-                    $header = array_map('trim', $rows[0]);
-                    $latest = null;
-                    for ($i = count($rows) - 1; $i > 0; $i--) {
-                        if (strtoupper($rows[$i][0]) !== 'TOTAL' && $rows[$i][0] !== '') {
-                            $latest = $rows[$i][0];
-                            break;
-                        }
-                    }
-                    $latestRows = array_filter($rows, function($r) use ($latest) { return $r[0] === $latest; });
-                    if ($latestRows) {
-                        echo '<table><tr>';
-                        foreach ($header as $h) echo '<th>' . htmlspecialchars($h) . '</th>';
+                $dao = new PortfolioDAO($csvFile ?: $csvPaths[0], 'portfolio_data', 'MicroCapDatabaseConfig');
+                $portfolioRows = $dao->readPortfolio();
+                $errors = $dao->getErrors();
+                if ($portfolioRows && count($portfolioRows)) {
+                    echo '<table><tr>';
+                    foreach (array_keys($portfolioRows[0]) as $h) echo '<th>' . htmlspecialchars($h) . '</th>';
+                    echo '</tr>';
+                    foreach ($portfolioRows as $r) {
+                        echo '<tr>';
+                        foreach ($r as $v) echo '<td>' . htmlspecialchars($v) . '</td>';
                         echo '</tr>';
-                        foreach ($latestRows as $r) {
-                            echo '<tr>';
-                            foreach ($r as $v) echo '<td>' . htmlspecialchars($v) . '</td>';
-                            echo '</tr>';
-                        }
-                        echo '</table>';
-                    } else {
-                        echo '<em>No recent micro-cap portfolio data found.</em>';
                     }
+                    echo '</table>';
                 } else {
-                    echo '<em>No micro-cap portfolio CSV found.</em>';
+                    echo '<em>No recent micro-cap portfolio data found.</em>';
+                }
+                if ($errors && count($errors)) {
+                    echo '<div style="color:#b00;margin-top:10px;"><strong>Portfolio Data Warning:</strong><ul>';
+                    foreach ($errors as $err) echo '<li>' . htmlspecialchars($err) . '</li>';
+                    echo '</ul></div>';
+                }
+                // Show retry option if there is failed data in session
+                $retryData = $dao->getRetryData();
+                if ($retryData) {
+                    echo '<form method="post" style="margin-top:10px;">';
+                    echo '<input type="hidden" name="retry_microcap" value="1">';
+                    echo '<button class="btn btn-secondary" type="submit">Retry Last Failed Save</button>';
+                    echo '</form>';
+                }
+                // Handle retry POST
+                if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_microcap'])) {
+                    if ($retryData) {
+                        $ok = $dao->writePortfolio($retryData);
+                        if ($ok) {
+                            echo '<div style="color:#080;margin-top:10px;">Retry successful!</div>';
+                            $dao->clearRetryData();
+                        } else {
+                            echo '<div style="color:#b00;margin-top:10px;">Retry failed. Please check errors above.</div>';
+                        }
+                    }
                 }
                 ?>
                 <div style="margin-top:20px;">
@@ -92,27 +107,52 @@
                 <p><strong>Purpose:</strong> Enhanced features</p>
                 <p><strong>Data Directory:</strong> data_blue-chip_cap/</p>
                 <?php
-                // Show latest blue-chip portfolio from DB
-                require_once __DIR__ . '/DbConfigClasses.php';
-                try {
-                    $pdo = LegacyDatabaseConfig::createConnection();
-                    $stmt = $pdo->query("SELECT * FROM portfolios_blue_chip ORDER BY id DESC LIMIT 10");
-                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    if ($rows) {
-                        echo '<table><tr>';
-                        foreach (array_keys($rows[0]) as $h) echo '<th>' . htmlspecialchars($h) . '</th>';
+                // Use generalized PortfolioDAO for blue-chip
+                $csvPaths = [
+                    '../Scripts and CSV Files/blue_chip_cap_portfolio.csv',
+                    '../Start Your Own/blue_chip_cap_portfolio.csv',
+                    '../data_blue_chip/blue_chip_cap_portfolio.csv',
+                ];
+                $csvFile = null;
+                foreach ($csvPaths as $p) { if (file_exists($p)) { $csvFile = $p; break; } }
+                $dao = new PortfolioDAO($csvFile ?: $csvPaths[0], 'portfolios_blue_chip', 'LegacyDatabaseConfig');
+                $portfolioRows = $dao->readPortfolio();
+                $errors = $dao->getErrors();
+                if ($portfolioRows && count($portfolioRows)) {
+                    echo '<table><tr>';
+                    foreach (array_keys($portfolioRows[0]) as $h) echo '<th>' . htmlspecialchars($h) . '</th>';
+                    echo '</tr>';
+                    foreach ($portfolioRows as $r) {
+                        echo '<tr>';
+                        foreach ($r as $v) echo '<td>' . htmlspecialchars($v) . '</td>';
                         echo '</tr>';
-                        foreach ($rows as $r) {
-                            echo '<tr>';
-                            foreach ($r as $v) echo '<td>' . htmlspecialchars($v) . '</td>';
-                            echo '</tr>';
-                        }
-                        echo '</table>';
-                    } else {
-                        echo '<em>No blue-chip portfolio data found.</em>';
                     }
-                } catch (Exception $e) {
-                    echo '<em>DB error: ' . htmlspecialchars($e->getMessage()) . '</em>';
+                    echo '</table>';
+                } else {
+                    echo '<em>No blue-chip portfolio data found.</em>';
+                }
+                if ($errors && count($errors)) {
+                    echo '<div style="color:#b00;margin-top:10px;"><strong>Portfolio Data Warning:</strong><ul>';
+                    foreach ($errors as $err) echo '<li>' . htmlspecialchars($err) . '</li>';
+                    echo '</ul></div>';
+                }
+                $retryData = $dao->getRetryData();
+                if ($retryData) {
+                    echo '<form method="post" style="margin-top:10px;">';
+                    echo '<input type="hidden" name="retry_bluechip" value="1">';
+                    echo '<button class="btn btn-secondary" type="submit">Retry Last Failed Save</button>';
+                    echo '</form>';
+                }
+                if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_bluechip'])) {
+                    if ($retryData) {
+                        $ok = $dao->writePortfolio($retryData);
+                        if ($ok) {
+                            echo '<div style="color:#080;margin-top:10px;">Retry successful!</div>';
+                            $dao->clearRetryData();
+                        } else {
+                            echo '<div style="color:#b00;margin-top:10px;">Retry failed. Please check errors above.</div>';
+                        }
+                    }
                 }
                 ?>
             </div>
@@ -122,26 +162,52 @@
                 <p><strong>Purpose:</strong> Enhanced features</p>
                 <p><strong>Data Directory:</strong> data_small_cap/</p>
                 <?php
-                // Show latest small-cap portfolio from DB
-                try {
-                    $pdo = LegacyDatabaseConfig::createConnection();
-                    $stmt = $pdo->query("SELECT * FROM portfolios_small_cap ORDER BY id DESC LIMIT 10");
-                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    if ($rows) {
-                        echo '<table><tr>';
-                        foreach (array_keys($rows[0]) as $h) echo '<th>' . htmlspecialchars($h) . '</th>';
+                // Use generalized PortfolioDAO for small-cap
+                $csvPaths = [
+                    '../Scripts and CSV Files/small_cap_portfolio.csv',
+                    '../Start Your Own/small_cap_portfolio.csv',
+                    '../data_small_cap/small_cap_portfolio.csv',
+                ];
+                $csvFile = null;
+                foreach ($csvPaths as $p) { if (file_exists($p)) { $csvFile = $p; break; } }
+                $dao = new PortfolioDAO($csvFile ?: $csvPaths[0], 'portfolios_small_cap', 'LegacyDatabaseConfig');
+                $portfolioRows = $dao->readPortfolio();
+                $errors = $dao->getErrors();
+                if ($portfolioRows && count($portfolioRows)) {
+                    echo '<table><tr>';
+                    foreach (array_keys($portfolioRows[0]) as $h) echo '<th>' . htmlspecialchars($h) . '</th>';
+                    echo '</tr>';
+                    foreach ($portfolioRows as $r) {
+                        echo '<tr>';
+                        foreach ($r as $v) echo '<td>' . htmlspecialchars($v) . '</td>';
                         echo '</tr>';
-                        foreach ($rows as $r) {
-                            echo '<tr>';
-                            foreach ($r as $v) echo '<td>' . htmlspecialchars($v) . '</td>';
-                            echo '</tr>';
-                        }
-                        echo '</table>';
-                    } else {
-                        echo '<em>No small-cap portfolio data found.</em>';
                     }
-                } catch (Exception $e) {
-                    echo '<em>DB error: ' . htmlspecialchars($e->getMessage()) . '</em>';
+                    echo '</table>';
+                } else {
+                    echo '<em>No small-cap portfolio data found.</em>';
+                }
+                if ($errors && count($errors)) {
+                    echo '<div style="color:#b00;margin-top:10px;"><strong>Portfolio Data Warning:</strong><ul>';
+                    foreach ($errors as $err) echo '<li>' . htmlspecialchars($err) . '</li>';
+                    echo '</ul></div>';
+                }
+                $retryData = $dao->getRetryData();
+                if ($retryData) {
+                    echo '<form method="post" style="margin-top:10px;">';
+                    echo '<input type="hidden" name="retry_smallcap" value="1">';
+                    echo '<button class="btn btn-secondary" type="submit">Retry Last Failed Save</button>';
+                    echo '</form>';
+                }
+                if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_smallcap'])) {
+                    if ($retryData) {
+                        $ok = $dao->writePortfolio($retryData);
+                        if ($ok) {
+                            echo '<div style="color:#080;margin-top:10px;">Retry successful!</div>';
+                            $dao->clearRetryData();
+                        } else {
+                            echo '<div style="color:#b00;margin-top:10px;">Retry failed. Please check errors above.</div>';
+                        }
+                    }
                 }
                 ?>
                 

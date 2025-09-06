@@ -1,0 +1,68 @@
+openapi: 3.0.1
+info:
+  title: Portfolio REST API
+  version: 1.0.0
+  description: REST API for reading and writing portfolio data for all portfolio types (micro, blue-chip, small-cap, etc.)
+servers:
+  - url: http://localhost/web_ui/portfolio_rest_api.php
+paths:
+  /:
+    get:
+      summary: Get latest portfolio data
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+          required: true
+          description: Portfolio type (micro, blue-chip, small-cap)
+      responses:
+        '200':
+          description: Portfolio data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  errors:
+                    type: array
+                    items:
+                      type: string
+    post:
+      summary: Write portfolio data
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+          required: true
+          description: Portfolio type (micro, blue-chip, small-cap)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rows:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Write result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  errors:
+                    type: array
+                    items:
+                      type: string
