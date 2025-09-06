@@ -80,9 +80,35 @@ This project is an attempt to find out — with transparency, data, and a real b
 - **Trade Logging** - Complete transparency with detailed execution logs
 
 ## System Requirements
-- Python  3.11+
+- **Python 3.7+** (3.11+ recommended)
 - Internet connection for market data
 - ~10MB storage for CSV data files
+
+## Installation
+
+### Standard Installation
+```bash
+pip3 install -r requirements.txt
+```
+
+### Fedora 30 / Older Systems
+For compatibility with older Python versions (3.7):
+```bash
+# Use compatible package versions
+pip3 install --user -r requirements-fedora30.txt
+
+# Or minimal installation
+pip3 install --user -r requirements-minimal.txt
+```
+
+**Fedora 30 Users:** See detailed installation guide at [`docs/Fedora30-Installation.md`](docs/Fedora30-Installation.md)
+
+### Troubleshooting Package Issues
+If you encounter pip3 errors on older systems:
+1. Try the minimal requirements first: `requirements-minimal.txt`
+2. Install packages individually with version ranges
+3. Use virtual environments to avoid conflicts
+4. Check the Fedora 30 installation guide for detailed troubleshooting
 
 # Follow Along
 The experiment runs from June 2025 to December 2025.  
