@@ -121,13 +121,8 @@
             </div>
         </div>
         
-        <div class="card">
-            <h3>Quick Actions</h3>
-            <a href="index.php" class="btn">Dashboard</a>
-            <a href="portfolios.php" class="btn">View Portfolios</a>
-            <a href="trades.php" class="btn">Trade History</a>
-            <a href="database.php" class="btn">Database Manager</a>
-        </div>
+    <?php require_once 'QuickActions.php'; ?>
+    <?php QuickActions::render(); ?>
     </div>
 </body>
 </html>

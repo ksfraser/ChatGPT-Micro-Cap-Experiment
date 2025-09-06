@@ -41,7 +41,31 @@
             <a href="migrate.php" class="btn">Data Migration</a>
         </div>
         
-        <a href="index.php" class="btn">Back to Dashboard</a>
+        <?php require_once 'QuickActions.php'; ?>
+        <?php QuickActions::render(); ?>
+
+        <div class="card">
+            <h3>Database Tools</h3>
+            <ul>
+                <li><a href="#dbtest" onclick="showSection('dbtest');return false;">DB Test</a></li>
+                <li><a href="#dbdiagnosis" onclick="showSection('dbdiagnosis');return false;">DB Diagnosis</a></li>
+            </ul>
+        </div>
+
+        <div id="dbtest" class="card" style="display:none;">
+            <?php include 'db_test.php'; ?>
+        </div>
+        <div id="dbdiagnosis" class="card" style="display:none;">
+            <?php include 'db_diagnosis.php'; ?>
+        </div>
+
+        <script>
+        function showSection(id) {
+            document.getElementById('dbtest').style.display = 'none';
+            document.getElementById('dbdiagnosis').style.display = 'none';
+            document.getElementById(id).style.display = 'block';
+        }
+        </script>
     </div>
 </body>
 </html>
