@@ -1,4 +1,3 @@
-<?php
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,12 +69,26 @@
                 ['name' => 'Micro-cap Database', 'db' => 'stock_market_micro_cap_trading']
             ];
             
+            // Use MySQLi instead of PDO (since pdo_mysql extension is missing)
+            $host = 'fhsws001.ksfraser.com';
+            $username = 'stocks';
+            $password = 'stocks';
+            $port = 3306;
+            
             foreach ($databases as $database) {
-                try {
-                    $pdo = new PDO("mysql:host=fhsws001.ksfraser.com;dbname={$database['db']}", 'stocks', 'stocks');
+                $connection = @mysqli_connect($host, $username, $password, $database['db'], $port);
+                
+                if ($connection) {
+                    $version = mysqli_get_server_info($connection);
+                    $result = mysqli_query($connection, "SHOW TABLES");
+                    $tableCount = mysqli_num_rows($result);
+                    
                     echo "<p style='color: green;'>✓ {$database['name']} connection successful</p>";
-                } catch(PDOException $e) {
-                    echo "<p style='color: red;'>✗ {$database['name']} connection failed</p>";
+                    echo "<p style='margin-left: 20px; font-size: 0.9em;'>Server: {$version}, Tables: {$tableCount}</p>";
+                    
+                    mysqli_close($connection);
+                } else {
+                    echo "<p style='color: red;'>✗ {$database['name']} connection failed: " . mysqli_connect_error() . "</p>";
                 }
             }
             ?>

@@ -48,6 +48,13 @@ data:
   small_cap_dir: data_small_cap
 database:
   host: fhsws001.ksfraser.com
+  port: 3306
+  username: stocks
+  password: stocks
+  pool:
+    max_connections: 10
+    pool_name: trading_pool
+    pool_reset_session: true
   legacy:
     database: stock_market_2
     description: Alias for master database (backward compatibility)
