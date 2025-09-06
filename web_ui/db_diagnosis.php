@@ -21,17 +21,81 @@ echo "</ul>";
 // Try MySQLi connection as fallback
 echo "<h3>Testing MySQLi Connection (Fallback):</h3>";
 
+// Load configuration from YAML file
+function loadDatabaseConfig() {
+    $configFile = '../db_config_refactored.yml';
+    
+    if (!file_exists($configFile)) {
+        return [
+            'error' => 'Configuration file not found',
+            'message' => "Database configuration file '{$configFile}' does not exist."
+        ];
+    }
+    
+    $content = file_get_contents($configFile);
+    if ($content === false) {
+        return [
+            'error' => 'Cannot read configuration file',
+            'message' => "Unable to read the database configuration file."
+        ];
+    }
+    
+    // Extract database configuration using regex
+    if (preg_match('/database:\s*\n.*?host:\s*([^\n]+)/s', $content, $hostMatch) &&
+        preg_match('/database:\s*\n.*?port:\s*([^\n]+)/s', $content, $portMatch) &&
+        preg_match('/database:\s*\n.*?username:\s*([^\n]+)/s', $content, $userMatch) &&
+        preg_match('/database:\s*\n.*?password:\s*([^\n]+)/s', $content, $passMatch)) {
+        
+        // Extract master and micro_cap database names
+        $masterDb = null;
+        $microDb = null;
+        
+        if (preg_match('/master:\s*\n.*?database:\s*([^\n]+)/s', $content, $masterMatch)) {
+            $masterDb = trim($masterMatch[1]);
+        }
+        
+        if (preg_match('/micro_cap:\s*\n.*?database:\s*([^\n]+)/s', $content, $microMatch)) {
+            $microDb = trim($microMatch[1]);
+        }
+        
+        return [
+            'host' => trim($hostMatch[1]),
+            'port' => (int)trim($portMatch[1]),
+            'username' => trim($userMatch[1]),
+            'password' => trim($passMatch[1]),
+            'master_db' => $masterDb,
+            'micro_db' => $microDb
+        ];
+    } else {
+        return [
+            'error' => 'Invalid configuration format',
+            'message' => "Database configuration format is invalid."
+        ];
+    }
+}
+
+$configResult = loadDatabaseConfig();
+
+if (isset($configResult['error'])) {
+    echo "<div style='background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin: 10px 0; color: #721c24;'>";
+    echo "<h4>❌ Configuration Error</h4>";
+    echo "<p><strong>Error:</strong> {$configResult['error']}</p>";
+    echo "<p>{$configResult['message']}</p>";
+    echo "</div>";
+    return;
+}
+
 if (extension_loaded('mysqli')) {
     $config = [
-        'host' => 'fhsws001.ksfraser.com',
-        'username' => 'stocks', 
-        'password' => 'stocks',
-        'port' => 3306
+        'host' => $configResult['host'],
+        'username' => $configResult['username'], 
+        'password' => $configResult['password'],
+        'port' => $configResult['port']
     ];
     
     $databases = [
-        'stock_market_2' => 'Master Database',
-        'stock_market_micro_cap_trading' => 'Micro-cap Database'
+        $configResult['master_db'] => 'Master Database',
+        $configResult['micro_db'] => 'Micro-cap Database'
     ];
     
     foreach ($databases as $dbname => $description) {

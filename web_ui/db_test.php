@@ -67,14 +67,13 @@ foreach ($configs as $configFile) {
 
 if (!$dbConfig) {
     echo "<p style='color: red;'>❌ Could not load database configuration from YAML files</p>";
-    echo "<p>Falling back to hardcoded values...</p>";
-    $dbConfig = [
-        'host' => 'fhsws001.ksfraser.com',
-        'port' => '3306',
-        'username' => 'stocks',
-        'password' => 'stocks'
-    ];
-    $configUsed = 'hardcoded fallback';
+    echo "<p>Please ensure db_config_refactored.yml exists with proper database configuration.</p>";
+    echo "<div style='background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin: 10px 0; color: #721c24;'>";
+    echo "<h4>Configuration Required</h4>";
+    echo "<p>The database configuration file is missing. Expected location: <code>../db_config_refactored.yml</code></p>";
+    echo "<p>This file should contain database connection details including host, username, password, and port.</p>";
+    echo "</div>";
+    return;
 }
 
 echo "<p><strong>Configuration loaded from:</strong> {$configUsed}</p>";

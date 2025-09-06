@@ -6,17 +6,32 @@ Implements the new database separation strategy
 
 import sys
 import yaml
+import os
 from pathlib import Path
 
 def create_refactored_database_config():
     """Create the new database configuration with proper separation."""
     
+    # Load existing configuration from db_config_refactored.yml if it exists
+    config_file = 'db_config_refactored.yml'
+    existing_config = {}
+    
+    if os.path.exists(config_file):
+        try:
+            with open(config_file, 'r') as f:
+                existing_config = yaml.safe_load(f)
+        except Exception as e:
+            print(f"Warning: Could not load existing config: {e}")
+    
+    # Get database connection details from existing config or use defaults
+    db_config = existing_config.get('database', {})
+    
     new_config = {
         'database': {
-            'host': 'fhsws001.ksfraser.com',
-            'port': 3306,
-            'username': 'stocks',
-            'password': 'stocks',
+            'host': db_config.get('host', 'localhost'),
+            'port': db_config.get('port', 3306),
+            'username': db_config.get('username', 'root'),
+            'password': db_config.get('password', ''),
             'pool': {
                 'max_connections': 10,
                 'pool_name': 'trading_pool',
@@ -218,7 +233,17 @@ def create_php_web_interface():
             
             foreach ($databases as $database) {
                 try {
-                    $pdo = new PDO("mysql:host=fhsws001.ksfraser.com;dbname={$database['db']}", 'stocks', 'stocks');
+                    // Load configuration from YAML file
+                    $configFile = '../db_config_refactored.yml';
+                    $config = parseDbConfig($configFile);
+                    
+                    if (!$config) {
+                        echo "<p style='color: red;'>✗ Cannot load database configuration</p>";
+                        continue;
+                    }
+                    
+                    $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$database['db']}";
+                    $pdo = new PDO($dsn, $config['username'], $config['password']);
                     echo "<p style='color: green;'>✓ {$database['name']} connection successful</p>";
                 } catch(PDOException $e) {
                     echo "<p style='color: red;'>✗ {$database['name']} connection failed</p>";

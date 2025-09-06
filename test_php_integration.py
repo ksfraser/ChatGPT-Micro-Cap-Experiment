@@ -94,18 +94,51 @@ def test_php_web_server():
     <div class="card">
         <h3>Database Connection Test</h3>
         <?php
-        // Test database connection
-        $host = 'fhsws001.ksfraser.com';
-        $username = 'stocks';
-        $password = 'stocks';
-        $database = 'stock_market_2';
+        // Load database configuration from YAML file
+        function parseDbConfig($configFile) {
+            if (!file_exists($configFile)) {
+                return null;
+            }
+            
+            $content = file_get_contents($configFile);
+            if ($content === false) {
+                return null;
+            }
+            
+            // Extract database configuration using regex
+            if (preg_match('/database:\s*\n.*?host:\s*([^\n]+)/s', $content, $hostMatch) &&
+                preg_match('/database:\s*\n.*?port:\s*([^\n]+)/s', $content, $portMatch) &&
+                preg_match('/database:\s*\n.*?username:\s*([^\n]+)/s', $content, $userMatch) &&
+                preg_match('/database:\s*\n.*?password:\s*([^\n]+)/s', $content, $passMatch)) {
+                
+                return [
+                    'host' => trim($hostMatch[1]),
+                    'port' => (int)trim($portMatch[1]),
+                    'username' => trim($userMatch[1]),
+                    'password' => trim($passMatch[1])
+                ];
+            }
+            return null;
+        }
         
-        try {
-            $pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password);
-            echo "<p style='color: green;'>✓ Database connection successful!</p>";
-            echo "<p>Connected to: $database</p>";
-        } catch(PDOException $e) {
-            echo "<p style='color: red;'>✗ Database connection failed: " . $e->getMessage() . "</p>";
+        $config = parseDbConfig('../db_config_refactored.yml');
+        
+        if (!$config) {
+            echo "<p style='color: red;'>✗ Database configuration not found</p>";
+            echo "<p>Please ensure db_config_refactored.yml exists with proper configuration.</p>";
+        } else {
+            $host = $config['host'];
+            $username = $config['username'];
+            $password = $config['password'];
+            $database = 'stock_market_2';
+            
+            try {
+                $pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password);
+                echo "<p style='color: green;'>✓ Database connection successful!</p>";
+                echo "<p>Connected to: $database</p>";
+            } catch(PDOException $e) {
+                echo "<p style='color: red;'>✗ Database connection failed: " . $e->getMessage() . "</p>";
+            }
         }
         ?>
     </div>
