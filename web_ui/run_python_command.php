@@ -73,13 +73,53 @@ if (stripos(PHP_OS, 'WIN') === 0) {
 
 // Only allow safe commands (basic check)
 $allowed = [
+    // Project root scripts
+    'enhanced_trading_script.py',
     'enhanced_automation.py',
+    'demo_simple_enhanced.py',
+    'demo_enhanced_trading.py',
+    'trading_script.py',
+    'test_php_integration.py',
+    'test_database_hosts.py',
+    'test_database_connection.py',
     'simple_automation.py',
+    'setup_database_tables.py',
+    'setup_database_config.py',
+    'refactor_database_architecture.py',
+    'database_config.py',
+    'database_architect.py',
+
+    // Scripts and CSV Files
+    'Scripts and CSV Files/Trading_Script.py',
+    'Scripts and CSV Files/Generate_Graph.py',
+
+    // Start Your Own
+    'Start Your Own/Trading_Script.py',
+    'Start Your Own/Generate_Graph.py',
+
+    // Stock-Analysis-Extension root
+    'Stock-Analysis-Extension/utils.py',
+    'Stock-Analysis-Extension/setup.py',
+    'Stock-Analysis-Extension/main.py',
+    'Stock-Analysis-Extension/dashboard.py',
+
+    // Stock-Analysis-Extension modules
+    'Stock-Analysis-Extension/modules/stock_data_fetcher.py',
+    'Stock-Analysis-Extension/modules/stock_analyzer.py',
+    'Stock-Analysis-Extension/modules/portfolio_manager.py',
+    'Stock-Analysis-Extension/modules/front_accounting.py',
+    'Stock-Analysis-Extension/modules/database_manager.py',
+
+    // Stock-Analysis-Extension config
+    'Stock-Analysis-Extension/config/config_template.py',
+
+    // scripts folder
+    'scripts/import-csv-to-database.py',
+
+    // Existing allowed commands
     'enhanced_automation.py --market_cap micro',
     'enhanced_automation.py --market_cap small',
     'enhanced_automation.py --market_cap mid',
-    'enhanced_trading_script.py',
-    'test_database_connection.py',
     '-c "from enhanced_automation import *; engine = EnhancedAutomationEngine(\'micro\'); engine.start_session()"',
     '-c "from database_architect import *; arch = DatabaseArchitect(); arch.show_sessions()"',
     '-c "import os; os.system(\'taskkill /f /im python.exe\')"',

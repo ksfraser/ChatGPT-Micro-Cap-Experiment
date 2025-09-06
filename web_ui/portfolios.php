@@ -53,7 +53,39 @@
                 <p><strong>Database:</strong> stock_market_2</p>
                 <p><strong>Purpose:</strong> Enhanced features</p>
                 <p><strong>Data Directory:</strong> data_small_cap/</p>
+                <div style="margin-top:20px;">
+                    <h5>Performance Chart</h5>
+                    <img src="serve_results_png.php?ts=<?=time()?>" alt="Performance Results" style="max-width:100%;border:1px solid #ccc;box-shadow:0 2px 8px #aaa;">
+                    <br>
+                    <button class="btn btn-secondary" onclick="regenGraph(this)">Regenerate Graph</button>
+                    <span id="regen-status" style="margin-left:10px;color:#007bff;"></span>
+                </div>
             </div>
+        <script>
+        function regenGraph(btn) {
+            btn.disabled = true;
+            btn.innerText = 'Regenerating...';
+            var status = document.getElementById('regen-status');
+            status.innerText = '';
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'run_python_command.php');
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                btn.disabled = false;
+                btn.innerText = 'Regenerate Graph';
+                try {
+                    var resp = JSON.parse(xhr.responseText);
+                    status.innerText = resp.output ? 'Graph regenerated!' : (resp.error || 'No output.');
+                    // Force reload of image
+                    var img = document.querySelector('img[alt="Performance Results"]');
+                    if (img) img.src = '../Results.png?ts=' + new Date().getTime();
+                } catch(e) {
+                    status.innerText = 'Error: ' + xhr.responseText;
+                }
+            };
+            xhr.send('command_key=scripts_and_csv_files_generate_graph');
+        }
+        </script>
         </div>
         
         <div class="card">
