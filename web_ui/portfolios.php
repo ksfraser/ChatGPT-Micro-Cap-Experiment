@@ -36,23 +36,48 @@
         </div>
         
         <div class="card">
-            <h3>Portfolio Data Locations</h3>
+            <h3>Portfolio Data Locations & Latest Data</h3>
             <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
                 <h4>Micro-Cap Portfolio</h4>
                 <p><strong>Purpose:</strong> CSV-mirrored original data</p>
                 <p><strong>Data Directory:</strong> data_micro_cap/</p>
-            </div>
-            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
-                <h4>Blue-Chip Portfolio</h4>
-                <p><strong>Database:</strong> stock_market_2</p>
-                <p><strong>Purpose:</strong> Enhanced features</p>
-                <p><strong>Data Directory:</strong> data_blue-chip_cap/</p>
-            </div>
-            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
-                <h4>Small-Cap Portfolio</h4>
-                <p><strong>Database:</strong> stock_market_2</p>
-                <p><strong>Purpose:</strong> Enhanced features</p>
-                <p><strong>Data Directory:</strong> data_small_cap/</p>
+                <?php
+                // Show latest micro-cap portfolio from CSV
+                $csvPaths = [
+                    '../Scripts and CSV Files/chatgpt_portfolio_update.csv',
+                    '../Start Your Own/chatgpt_portfolio_update.csv',
+                    '../data_micro_cap/chatgpt_portfolio_update.csv',
+                ];
+                $csvFile = null;
+                foreach ($csvPaths as $p) { if (file_exists($p)) { $csvFile = $p; break; } }
+                if ($csvFile) {
+                    $rows = array_map('str_getcsv', file($csvFile));
+                    $header = array_map('trim', $rows[0]);
+                    $latest = null;
+                    for ($i = count($rows) - 1; $i > 0; $i--) {
+                        if (strtoupper($rows[$i][0]) !== 'TOTAL' && $rows[$i][0] !== '') {
+                            $latest = $rows[$i][0];
+                            break;
+                        }
+                    }
+                    $latestRows = array_filter($rows, function($r) use ($latest) { return $r[0] === $latest; });
+                    if ($latestRows) {
+                        echo '<table><tr>';
+                        foreach ($header as $h) echo '<th>' . htmlspecialchars($h) . '</th>';
+                        echo '</tr>';
+                        foreach ($latestRows as $r) {
+                            echo '<tr>';
+                            foreach ($r as $v) echo '<td>' . htmlspecialchars($v) . '</td>';
+                            echo '</tr>';
+                        }
+                        echo '</table>';
+                    } else {
+                        echo '<em>No recent micro-cap portfolio data found.</em>';
+                    }
+                } else {
+                    echo '<em>No micro-cap portfolio CSV found.</em>';
+                }
+                ?>
                 <div style="margin-top:20px;">
                     <h5>Performance Chart</h5>
                     <img src="serve_results_png.php?ts=<?=time()?>" alt="Performance Results" style="max-width:100%;border:1px solid #ccc;box-shadow:0 2px 8px #aaa;">
@@ -60,6 +85,69 @@
                     <button class="btn btn-secondary" onclick="regenGraph(this)">Regenerate Graph</button>
                     <span id="regen-status" style="margin-left:10px;color:#007bff;"></span>
                 </div>
+            </div>
+            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                <h4>Blue-Chip Portfolio</h4>
+                <p><strong>Database:</strong> stock_market_2</p>
+                <p><strong>Purpose:</strong> Enhanced features</p>
+                <p><strong>Data Directory:</strong> data_blue-chip_cap/</p>
+                <?php
+                // Show latest blue-chip portfolio from DB
+                require_once __DIR__ . '/DbConfigClasses.php';
+                try {
+                    $pdo = LegacyDatabaseConfig::createConnection();
+                    $stmt = $pdo->query("SELECT * FROM portfolios_blue_chip ORDER BY id DESC LIMIT 10");
+                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    if ($rows) {
+                        echo '<table><tr>';
+                        foreach (array_keys($rows[0]) as $h) echo '<th>' . htmlspecialchars($h) . '</th>';
+                        echo '</tr>';
+                        foreach ($rows as $r) {
+                            echo '<tr>';
+                            foreach ($r as $v) echo '<td>' . htmlspecialchars($v) . '</td>';
+                            echo '</tr>';
+                        }
+                        echo '</table>';
+                    } else {
+                        echo '<em>No blue-chip portfolio data found.</em>';
+                    }
+                } catch (Exception $e) {
+                    echo '<em>DB error: ' . htmlspecialchars($e->getMessage()) . '</em>';
+                }
+                ?>
+            </div>
+            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                <h4>Small-Cap Portfolio</h4>
+                <p><strong>Database:</strong> stock_market_2</p>
+                <p><strong>Purpose:</strong> Enhanced features</p>
+                <p><strong>Data Directory:</strong> data_small_cap/</p>
+                <?php
+                // Show latest small-cap portfolio from DB
+                try {
+                    $pdo = LegacyDatabaseConfig::createConnection();
+                    $stmt = $pdo->query("SELECT * FROM portfolios_small_cap ORDER BY id DESC LIMIT 10");
+                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    if ($rows) {
+                        echo '<table><tr>';
+                        foreach (array_keys($rows[0]) as $h) echo '<th>' . htmlspecialchars($h) . '</th>';
+                        echo '</tr>';
+                        foreach ($rows as $r) {
+                            echo '<tr>';
+                            foreach ($r as $v) echo '<td>' . htmlspecialchars($v) . '</td>';
+                            echo '</tr>';
+                        }
+                        echo '</table>';
+                    } else {
+                        echo '<em>No small-cap portfolio data found.</em>';
+                    }
+                } catch (Exception $e) {
+                    echo '<em>DB error: ' . htmlspecialchars($e->getMessage()) . '</em>';
+                }
+                ?>
+                
+                
+
+                
             </div>
         <script>
         function regenGraph(btn) {

@@ -1,4 +1,17 @@
 <?php
+// Utility function to ensure api_keys table exists in legacy DB
+function ensureApiKeysTable() {
+    try {
+        $pdo = LegacyDatabaseConfig::createConnection();
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->exec("CREATE TABLE IF NOT EXISTS api_keys (
+            name VARCHAR(64) PRIMARY KEY,
+            value VARCHAR(256)
+        )");
+    } catch (Exception $e) {
+        // Ignore for now
+    }
+}
 /**
  * BaseDatabaseConfig: Abstract base for all DB config classes
  */

@@ -1,3 +1,8 @@
+api_keys:
+  openai: ''  # Get your key at https://platform.openai.com/account/api-keys
+  alpha_vantage: ''  # Get your key at https://www.alphavantage.co/support/#api-key
+  finnhub: ''  # Get your key at https://finnhub.io/register
+  fmp: ''  # Get your key at https://financialmodelingprep.com/developer/docs/pricing/
 api:
   rate_limits:
     llm_requests_per_minute: 10

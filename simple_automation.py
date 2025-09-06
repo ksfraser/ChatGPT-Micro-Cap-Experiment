@@ -15,6 +15,8 @@ import argparse
 from pathlib import Path
 from typing import Dict, List, Any
 import pandas as pd
+import yaml
+import mysql.connector
 
 # Import existing trading functions
 from trading_script import (
@@ -237,22 +239,74 @@ def run_automated_trading(api_key: str, model: str = "gpt-4", data_dir: str = "S
     print(f"Response saved to: {response_file}")
 
 
+def get_openai_key_from_db(yml=None):
+    # Only use DB credentials from YAML config
+    if not yml or 'database' not in yml:
+        return None
+    db = yml['database']
+    db_conf = {
+        'host': db.get('host'),
+        'port': int(db.get('port', 3306)),
+        'user': db.get('username'),
+        'password': db.get('password'),
+        'database': db.get('legacy', {}).get('database', db.get('master', {}).get('database'))
+    }
+    # If any required field is missing, abort
+    if not all([db_conf['host'], db_conf['user'], db_conf['password'], db_conf['database']]):
+        return None
+    try:
+        conn = mysql.connector.connect(**db_conf)
+        cursor = conn.cursor()
+        cursor.execute("SELECT value FROM api_keys WHERE name='openai'")
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        if row and row[0]:
+            return row[0]
+    except Exception:
+        pass
+    return None
+
 def main():
-    """Main function"""
     parser = argparse.ArgumentParser(description="Simple Automated Trading")
     parser.add_argument("--api-key", help="OpenAI API key (or set OPENAI_API_KEY env var)")
     parser.add_argument("--model", default="gpt-4", help="OpenAI model to use")
     parser.add_argument("--data-dir", default="Start Your Own", help="Data directory")
     parser.add_argument("--dry-run", action="store_true", help="Don't execute trades, just show recommendations")
-    
+
     args = parser.parse_args()
-    
-    # Get API key
+
+    # Get API key: CLI > ENV > YAML > DB
     api_key = args.api_key or os.getenv("OPENAI_API_KEY")
+    yml = None
     if not api_key:
-        print("Error: OpenAI API key required. Set OPENAI_API_KEY env var or use --api-key")
+        # Try YAML config
+        config_paths = [
+            Path("db_config_refactored.yml"),
+            Path("../db_config_refactored.yml"),
+            Path("db_config.yml"),
+            Path("../db_config.yml")
+        ]
+        for path in config_paths:
+            if path.exists():
+                with open(path, "r") as f:
+                    try:
+                        yml = yaml.safe_load(f)
+                        api_key = (
+                            yml.get("api_keys", {}).get("openai")
+                            if yml and "api_keys" in yml else None
+                        )
+                        if api_key:
+                            break
+                    except Exception:
+                        continue
+    if not api_key:
+        # Try DB
+        api_key = get_openai_key_from_db(yml)
+    if not api_key:
+        print("Error: OpenAI API key required. Set OPENAI_API_KEY env var, use --api-key, add to YAML config, or store in DB.")
         return
-    
+
     # Run automated trading
     run_automated_trading(
         api_key=api_key,
@@ -260,7 +314,6 @@ def main():
         data_dir=args.data_dir,
         dry_run=args.dry_run
     )
-
 
 if __name__ == "__main__":
     main()
