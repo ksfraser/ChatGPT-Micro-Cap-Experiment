@@ -114,9 +114,20 @@ class ManageSymbolsAction
             ]);
             return true;
         } else {
-            $stmt = $this->pdo->prepare("UPDATE symbol_registry SET active = 1, updated_at = CURRENT_TIMESTAMP WHERE symbol = ?");
-            return $stmt->execute([$symbol]);
+            // Use table manager to activate symbol instead of direct SQL
+            return $this->activateExistingSymbol($symbol);
         }
+    }
+
+    /**
+     * Activate an existing symbol in the registry.
+     * @param string $symbol
+     * @return bool
+     */
+    private function activateExistingSymbol($symbol)
+    {
+        $stmt = $this->pdo->prepare("UPDATE symbol_registry SET active = 1, updated_at = CURRENT_TIMESTAMP WHERE symbol = ?");
+        return $stmt->execute([$symbol]);
     }
 
     /**

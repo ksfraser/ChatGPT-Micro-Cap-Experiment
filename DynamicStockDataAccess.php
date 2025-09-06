@@ -1,4 +1,6 @@
+
 <?php
+require_once __DIR__ . '/src/IStockDataAccess.php';
 
 /**
  * Dynamic Stock Data Access Layer

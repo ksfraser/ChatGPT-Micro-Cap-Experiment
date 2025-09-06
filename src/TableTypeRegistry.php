@@ -26,11 +26,16 @@ class TableTypeRegistry
     /**
      * Validate a stock symbol (must be 1-10 uppercase alphanumeric characters).
      *
-     * @param string $symbol
+     * @param mixed $symbol
      * @return bool
      */
     public static function isValidSymbol($symbol)
     {
+        // Ensure input is a string
+        if (!is_string($symbol)) {
+            return false;
+        }
+        
         return preg_match('/^[A-Z0-9]{1,10}$/', $symbol) === 1;
     }
 }

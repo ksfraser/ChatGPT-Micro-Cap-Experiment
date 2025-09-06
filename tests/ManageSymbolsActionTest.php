@@ -47,8 +47,75 @@ class ManageSymbolsActionTest extends TestCase
     {
         $mockTableManager = $this->createMock(IStockTableManager::class);
         $mockTableManager->expects($this->once())->method('removeTablesForSymbol')->with('IBM', true)->willReturn(true);
-    $mockPdo = $this->createMock(PDO::class);
-    $action = new ManageSymbolsAction($mockTableManager, $mockPdo);
+        $mockPdo = $this->createMock(PDO::class);
+        $action = new ManageSymbolsAction($mockTableManager, $mockPdo);
         $this->assertTrue($action->remove('IBM'));
+    }
+
+    public function testActivateNewSymbol()
+    {
+        $mockTableManager = $this->createMock(IStockTableManager::class);
+        $mockTableManager->method('getAllSymbols')->willReturn([]);
+        $mockTableManager->expects($this->once())->method('registerSymbol')
+            ->with('TSLA', [
+                'company_name' => '',
+                'sector' => '',
+                'industry' => '',
+                'market_cap' => 'micro',
+                'active' => true
+            ]);
+        $mockPdo = $this->createMock(PDO::class);
+        $action = new ManageSymbolsAction($mockTableManager, $mockPdo);
+        
+        $this->assertTrue($action->activate('TSLA'));
+    }
+
+    public function testActivateExistingSymbol()
+    {
+        $mockTableManager = $this->createMock(IStockTableManager::class);
+        $mockTableManager->method('getAllSymbols')->willReturn([
+            ['symbol' => 'IBM']
+        ]);
+        
+        $mockStatement = $this->createMock(PDOStatement::class);
+        $mockStatement->method('execute')->willReturn(true);
+        
+        $mockPdo = $this->createMock(PDO::class);
+        $mockPdo->method('prepare')->willReturn($mockStatement);
+        
+        $action = new ManageSymbolsAction($mockTableManager, $mockPdo);
+        $this->assertTrue($action->activate('IBM'));
+    }
+
+    public function testDeactivateSymbol()
+    {
+        $mockTableManager = $this->createMock(IStockTableManager::class);
+        $mockTableManager->expects($this->once())->method('deactivateSymbol')->with('IBM')->willReturn(true);
+        $mockPdo = $this->createMock(PDO::class);
+        $action = new ManageSymbolsAction($mockTableManager, $mockPdo);
+        
+        $this->assertTrue($action->deactivate('IBM'));
+    }
+
+    public function testCleanupOrphanedTables()
+    {
+        $mockTableManager = $this->createMock(IStockTableManager::class);
+        $mockTableManager->method('getAllSymbols')->willReturn([
+            ['symbol' => 'IBM'],
+            ['symbol' => 'AAPL']
+        ]);
+        
+        $mockStatement = $this->createMock(PDOStatement::class);
+        $mockStatement->method('fetchAll')->willReturn(['IBM_prices', 'AAPL_prices', 'ORPHAN_prices']);
+        $mockStatement->method('execute')->willReturn(true);
+        
+        $mockPdo = $this->createMock(PDO::class);
+        $mockPdo->method('query')->willReturn($mockStatement);
+        $mockPdo->method('prepare')->willReturn($mockStatement);
+        
+        $action = new ManageSymbolsAction($mockTableManager, $mockPdo);
+        $orphaned = $action->cleanup();
+        
+        $this->assertContains('ORPHAN_prices', $orphaned);
     }
 }

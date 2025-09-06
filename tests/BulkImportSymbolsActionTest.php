@@ -43,5 +43,41 @@ class BulkImportSymbolsActionTest extends TestCase
         $symbols = ['ibm!'];
         $results = $action->execute($symbols, false);
         $this->assertNotEmpty($results['errors']);
+        $this->assertEquals('ibm!', $results['errors'][0]['symbol']);
+        $this->assertEquals('Invalid symbol format', $results['errors'][0]['error']);
+    }
+
+    public function testExecuteWithException()
+    {
+        $mockTableManager = $this->createMock(IStockTableManager::class);
+        $mockAddSymbolAction = $this->createMock(AddSymbolAction::class);
+        $mockAddSymbolAction->method('execute')->willThrowException(new Exception('Database error'));
+        
+        $action = new BulkImportSymbolsAction($mockTableManager, $mockAddSymbolAction);
+        $symbols = ['IBM'];
+        $results = $action->execute($symbols, false);
+        
+        $this->assertNotEmpty($results['errors']);
+        $this->assertEquals('IBM', $results['errors'][0]['symbol']);
+        $this->assertEquals('Database error', $results['errors'][0]['error']);
+    }
+
+    public function testExecuteMixedResults()
+    {
+        $mockTableManager = $this->createMock(IStockTableManager::class);
+        $mockAddSymbolAction = $this->createMock(AddSymbolAction::class);
+        $mockAddSymbolAction->method('execute')->willReturnOnConsecutiveCalls(
+            ['status' => 'created', 'symbol' => 'IBM'],
+            ['status' => 'exists', 'symbol' => 'AAPL']
+        );
+        
+        $action = new BulkImportSymbolsAction($mockTableManager, $mockAddSymbolAction);
+        $symbols = ['IBM', 'AAPL', 'invalid!'];
+        $results = $action->execute($symbols, false);
+        
+        $this->assertEquals(['IBM'], $results['created']);
+        $this->assertEquals(['AAPL'], $results['existing']);
+        $this->assertCount(1, $results['errors']);
+        $this->assertEquals('invalid!', $results['errors'][0]['symbol']);
     }
 }
