@@ -6,8 +6,14 @@ pandas>=1.0.0,<1.4.0
 yfinance>=0.1.50,<0.1.90
 matplotlib>=3.1.0,<3.5.0
 
+# Database connectivity - compatible versions
+mysql-connector-python>=8.0.0,<8.1.0
+PyYAML>=5.1.0,<6.0.0
+
 # Optional: If you need specific versions that are known to work
 # numpy==1.19.5
 # pandas==1.3.5
 # yfinance==0.1.87
 # matplotlib==3.4.3
+# mysql-connector-python==8.0.33
+# PyYAML==5.4.1
