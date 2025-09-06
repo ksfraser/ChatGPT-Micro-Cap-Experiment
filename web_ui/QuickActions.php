@@ -9,7 +9,9 @@ class QuickActions {
         ['label' => 'Trade History', 'href' => 'trades.php'],
         ['label' => 'Analytics', 'href' => 'analytics.php'],
         ['label' => 'Database Manager', 'href' => 'database.php'],
-        ['label' => 'Automation', 'href' => 'automation.php'],
+    ['label' => 'Automation', 'href' => 'automation.php'],
+    ['label' => 'Automation Monitoring', 'href' => 'automation_monitoring.php'],
+    ['label' => 'Automation Config', 'href' => 'automation_config.php'],
         ['label' => 'System Status', 'href' => 'system_status.php'],
     ];
 

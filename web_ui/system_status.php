@@ -17,6 +17,16 @@ include_once 'QuickActions.php';
         .success { border-left: 4px solid #28a745; }
         .info { border-left: 4px solid #007bff; }
         .warning { border-left: 4px solid #ffc107; }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        .btn:hover { background: #0056b3; }
     </style>
 </head>
 <body>

@@ -29,23 +29,15 @@
         <div class="header">
             <h1>Trade History</h1>
             <p>View trading history and transaction logs across all market categories</p>
+    <?php require_once 'QuickActions.php'; ?>
+    <?php QuickActions::render(); ?>
         </div>
         
         <div class="card success">
             <h3>✅ Database Architecture</h3>
             <p>Trade history is stored in multiple locations based on the new database architecture:</p>
-            <ul>
-                <li><strong>Micro-cap trades:</strong> stock_market_micro_cap_trading.trade_log (CSV-mirrored)</li>
-                <li><strong>Enhanced trades:</strong> stock_market_2.trades_enhanced (multi-market cap)</li>
-                <li><strong>CSV backups:</strong> Individual CSV files in data directories</li>
-            </ul>
-        </div>
-        
-        <div class="card info">
-            <h3>Access Trade History</h3>
-            <p>Due to PHP MySQL limitations, trade history is best accessed via Python scripts:</p>
-            
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; font-family: monospace;">
+            <?php require_once 'UiStyles.php'; ?>
+            <?php UiStyles::render(); ?>
                 <h4>View Recent Trades:</h4>
                 <p># Load and display portfolio with recent trades<br>
                 python enhanced_trading_script.py</p>

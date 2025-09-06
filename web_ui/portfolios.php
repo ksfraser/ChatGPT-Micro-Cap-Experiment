@@ -31,23 +31,15 @@
         <div class="header">
             <h1>Portfolio Management</h1>
             <p>View and manage trading portfolios across different market categories</p>
+    <?php require_once 'QuickActions.php'; ?>
+    <?php QuickActions::render(); ?>
         </div>
         
         <div class="card warning">
             <h3>⚠️ PHP Database Limitations</h3>
             <p>This PHP installation doesn't have MySQL database extensions enabled. For full portfolio functionality, use the Python backend:</p>
-            <ul>
-                <li><strong>Enhanced Trading Script:</strong> <code>python enhanced_trading_script.py</code></li>
-                <li><strong>Portfolio Analysis:</strong> Direct database access with full functionality</li>
-            </ul>
-        </div>
-        
-        <div class="card info">
-            <h3>Available Portfolio Categories</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
-                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
-                    <h4>Micro-Cap Portfolio</h4>
-                    <p><strong>Database:</strong> stock_market_micro_cap_trading</p>
+            <?php require_once 'UiStyles.php'; ?>
+            <?php UiStyles::render(); ?>
                     <p><strong>Purpose:</strong> CSV-mirrored original data</p>
                     <p><strong>Data Directory:</strong> data_micro_cap/</p>
                 </div>

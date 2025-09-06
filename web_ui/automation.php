@@ -4,38 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Automation Control - Enhanced Trading System</title>
-    <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0; padding: 20px; background: #f5f5f5; 
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .card { 
-            background: white; padding: 20px; margin: 10px 0; border-radius: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-        }
-        .info { border-left: 4px solid #007bff; }
-        .success { border-left: 4px solid #28a745; }
-        .warning { border-left: 4px solid #ffc107; }
-        .danger { border-left: 4px solid #dc3545; }
-        .btn { 
-            display: inline-block; padding: 10px 20px; background: #007bff; color: white; 
-            text-decoration: none; border-radius: 4px; margin: 5px;
-        }
-        .btn-success { background: #28a745; }
-        .btn-warning { background: #ffc107; color: #000; }
-        .btn-danger { background: #dc3545; }
-        .btn:hover { opacity: 0.8; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
-        .code-block { 
-            background: #f8f9fa; padding: 15px; border-radius: 5px; 
-            font-family: monospace; font-size: 0.9em; overflow-x: auto;
-        }
-    </style>
+    <?php require_once 'UiStyles.php'; ?>
+    <?php UiStyles::render(); ?>
 </head>
 <body>
     <div class="container">
+        <?php require_once 'QuickActions.php'; ?>
+        <?php QuickActions::render(); ?>
         <div class="header">
             <h1>🤖 Automation Control Center</h1>
             <p>Enhanced trading automation with multi-market cap support</p>
@@ -59,9 +34,11 @@
                 <p>Launch the enhanced automation engine:</p>
                 <div class="code-block">
                     # Enhanced automation with database<br>
-                    python enhanced_automation.py<br><br>
+                    python enhanced_automation.py
+                    <button class="btn" onclick="runPy('enhanced_automation.py', this)">Run</button><br><br>
                     # Original automation (CSV only)<br>
                     python simple_automation.py
+                    <button class="btn" onclick="runPy('simple_automation.py', this)">Run</button>
                 </div>
                 <p><strong>Note:</strong> Enhanced version includes database logging and multi-market cap support.</p>
             </div>
@@ -96,11 +73,14 @@
                     <h4>Market Cap Selection</h4>
                     <div class="code-block">
                         # Run micro-cap automation<br>
-                        python enhanced_automation.py --market_cap micro<br><br>
+                        python enhanced_automation.py --market_cap micro
+                        <button class="btn" onclick="runPy('enhanced_automation.py --market_cap micro', this)">Run</button><br><br>
                         # Run small-cap automation<br>
-                        python enhanced_automation.py --market_cap small<br><br>
+                        python enhanced_automation.py --market_cap small
+                        <button class="btn" onclick="runPy('enhanced_automation.py --market_cap small', this)">Run</button><br><br>
                         # Run mid-cap automation<br>
                         python enhanced_automation.py --market_cap mid
+                        <button class="btn" onclick="runPy('enhanced_automation.py --market_cap mid', this)">Run</button>
                     </div>
                 </div>
                 
@@ -108,9 +88,11 @@
                     <h4>Session Management</h4>
                     <div class="code-block">
                         # Start new trading session<br>
-                        python -c "from enhanced_automation import *; engine = EnhancedAutomationEngine('micro'); engine.start_session()"<br><br>
+                        python -c "from enhanced_automation import *; engine = EnhancedAutomationEngine('micro'); engine.start_session()"
+                        <button class="btn" onclick="runPy('-c \"from enhanced_automation import *; engine = EnhancedAutomationEngine(\\'micro\\'); engine.start_session()\"', this)">Run</button><br><br>
                         # View active sessions<br>
                         python -c "from database_architect import *; arch = DatabaseArchitect(); arch.show_sessions()"
+                        <button class="btn" onclick="runPy('-c \"from database_architect import *; arch = DatabaseArchitect(); arch.show_sessions()\"', this)">Run</button>
                     </div>
                 </div>
             </div>
@@ -128,9 +110,11 @@
             
             <div class="code-block">
                 # Emergency stop all automation<br>
-                python -c "import os; os.system('taskkill /f /im python.exe')"<br><br>
+                python -c "import os; os.system('taskkill /f /im python.exe')"
+                <button class="btn" onclick="runPy('-c \"import os; os.system(\\'taskkill /f /im python.exe\\')\"', this)">Run</button><br><br>
                 # Check current positions<br>
                 python -c "from enhanced_automation import *; engine = EnhancedAutomationEngine('micro'); engine.show_positions()"
+                <button class="btn" onclick="runPy('-c \"from enhanced_automation import *; engine = EnhancedAutomationEngine(\\'micro\\'); engine.show_positions()\"', this)">Run</button>
             </div>
         </div>
         
@@ -164,11 +148,14 @@
             <h3>🔧 Troubleshooting</h3>
             <div class="code-block">
                 # Check system health<br>
-                python -c "from database_architect import *; arch = DatabaseArchitect(); arch.test_connections()"<br><br>
+                python -c "from database_architect import *; arch = DatabaseArchitect(); arch.test_connections()"
+                <button class="btn" onclick="runPy('-c \"from database_architect import *; arch = DatabaseArchitect(); arch.test_connections()\"', this)">Run</button><br><br>
                 # Validate configuration<br>
-                python -c "import yaml; print(yaml.safe_load(open('db_config_refactored.yml')))"<br><br>
+                python -c "import yaml; print(yaml.safe_load(open('db_config_refactored.yml')))"
+                <button class="btn" onclick="runPy('-c \"import yaml; print(yaml.safe_load(open(\\'db_config_refactored.yml\\')))\"', this)">Run</button><br><br>
                 # View recent trades<br>
                 python -c "import pandas as pd; print(pd.read_csv('chatgpt_trade_log.csv').tail())"
+                <button class="btn" onclick="runPy('-c \"import pandas as pd; print(pd.read_csv(\\'chatgpt_trade_log.csv\\').tail())\"', this)">Run</button>
             </div>
         </div>
         
@@ -180,6 +167,33 @@
             <a href="analytics.php" class="btn">Analytics</a>
             <a href="database.php" class="btn">Database Manager</a>
         </div>
+    <div id="py-output" class="card" style="display:none;"></div>
+    <script>
+    function runPy(cmd, btn) {
+        var outputDiv = document.getElementById('py-output');
+        outputDiv.style.display = 'block';
+        outputDiv.innerHTML = '<em>Running: ' + cmd + ' ...</em>';
+        btn.disabled = true;
+        fetch('run_python_command.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'command=' + encodeURIComponent(cmd)
+        })
+        .then(r => r.json())
+        .then(data => {
+            btn.disabled = false;
+            if (data.output !== undefined) {
+                outputDiv.innerHTML = '<pre>' + data.output + '</pre>';
+            } else {
+                outputDiv.innerHTML = '<span style="color:red;">' + (data.error || 'Unknown error') + '</span>';
+            }
+        })
+        .catch(e => {
+            btn.disabled = false;
+            outputDiv.innerHTML = '<span style="color:red;">Error: ' + e + '</span>';
+        });
+    }
+    </script>
     </div>
 </body>
 </html>

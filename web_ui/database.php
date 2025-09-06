@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Database Management</title>
-    <link rel="stylesheet" href="style.css">
+    <?php require_once 'UiStyles.php'; ?>
+    <?php UiStyles::render(); ?>
 </head>
 <body>
     <div class="container">
+        <?php require_once 'QuickActions.php'; ?>
+        <?php QuickActions::render(); ?>
         <h1>Database Management</h1>
         
         <div class="card">
