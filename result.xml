@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="CLI Arguments" tests="48" assertions="145" errors="3" failures="2" skipped="0" time="8.500455">
+    <testsuite name="AddSymbolActionTest" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolActionTest.php" tests="5" assertions="16" errors="0" failures="0" skipped="0" time="0.064103">
+      <testcase name="testExecuteCreatesSymbol" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolActionTest.php" line="12" class="AddSymbolActionTest" classname="AddSymbolActionTest" assertions="3" time="0.022513"/>
+      <testcase name="testExecuteSymbolExists" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolActionTest.php" line="24" class="AddSymbolActionTest" classname="AddSymbolActionTest" assertions="3" time="0.028489"/>
+      <testcase name="testExecuteInvalidSymbol" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolActionTest.php" line="39" class="AddSymbolActionTest" classname="AddSymbolActionTest" assertions="2" time="0.001231"/>
+      <testcase name="testExecuteSymbolExistsButNoTables" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolActionTest.php" line="48" class="AddSymbolActionTest" classname="AddSymbolActionTest" assertions="3" time="0.001119"/>
+      <testcase name="testExecuteWithCompanyData" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolActionTest.php" line="65" class="AddSymbolActionTest" classname="AddSymbolActionTest" assertions="5" time="0.010750"/>
+    </testsuite>
+    <testsuite name="AddSymbolCliHandlerTest" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolCliHandlerTest.php" tests="7" assertions="24" errors="0" failures="0" skipped="0" time="0.066781">
+      <testcase name="testRunWithValidSymbol" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolCliHandlerTest.php" line="20" class="AddSymbolCliHandlerTest" classname="AddSymbolCliHandlerTest" assertions="4" time="0.017763">
+        <system-out>✓ Symbol IBM registered and tables created.
+Tables created: prices, indicators
+</system-out>
+      </testcase>
+      <testcase name="testRunWithExistingSymbol" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolCliHandlerTest.php" line="32" class="AddSymbolCliHandlerTest" classname="AddSymbolCliHandlerTest" assertions="4" time="0.001529">
+        <system-out>→ Symbol AAPL already exists. Tables checked.
+</system-out>
+      </testcase>
+      <testcase name="testRunWithMissingSymbol" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolCliHandlerTest.php" line="44" class="AddSymbolCliHandlerTest" classname="AddSymbolCliHandlerTest" assertions="2" time="0.011178">
+        <system-out>Error: Symbol required
+Add Symbol Tool
+
+Usage:
+  php AddNewSymbol.php SYMBOL [OPTIONS]
+
+Options:
+  --company=NAME       Company name
+  --sector=SECTOR      Business sector
+  --industry=INDUSTRY  Industry classification
+  --market-cap=SIZE    Market cap size (micro, small, mid, large)
+  --inactive           Create symbol as inactive
+
+Examples:
+  php AddNewSymbol.php IBM
+  php AddNewSymbol.php AAPL --company="Apple Inc." --sector="Technology"
+</system-out>
+      </testcase>
+      <testcase name="testRunWithOptions" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolCliHandlerTest.php" line="54" class="AddSymbolCliHandlerTest" classname="AddSymbolCliHandlerTest" assertions="4" time="0.001848">
+        <system-out>✓ Symbol AAPL registered and tables created.
+</system-out>
+      </testcase>
+      <testcase name="testRunWithInactiveFlag" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolCliHandlerTest.php" line="83" class="AddSymbolCliHandlerTest" classname="AddSymbolCliHandlerTest" assertions="4" time="0.001593">
+        <system-out>✓ Symbol IBM registered and tables created.
+</system-out>
+      </testcase>
+      <testcase name="testRunWithActionException" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolCliHandlerTest.php" line="97" class="AddSymbolCliHandlerTest" classname="AddSymbolCliHandlerTest" assertions="2" time="0.017419">
+        <system-out>Error: Database error
+</system-out>
+      </testcase>
+      <testcase name="testSymbolCaseNormalization" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\AddSymbolCliHandlerTest.php" line="108" class="AddSymbolCliHandlerTest" classname="AddSymbolCliHandlerTest" assertions="4" time="0.015451">
+        <system-out>✓ Symbol IBM registered and tables created.
+</system-out>
+      </testcase>
+    </testsuite>
+    <testsuite name="BulkImportSymbolsActionTest" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsActionTest.php" tests="5" assertions="13" errors="0" failures="0" skipped="0" time="0.021291">
+      <testcase name="testExecuteDryRun" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsActionTest.php" line="13" class="BulkImportSymbolsActionTest" classname="BulkImportSymbolsActionTest" assertions="1" time="0.001340"/>
+      <testcase name="testExecuteCreatesAndExists" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsActionTest.php" line="23" class="BulkImportSymbolsActionTest" classname="BulkImportSymbolsActionTest" assertions="2" time="0.002791"/>
+      <testcase name="testExecuteInvalidSymbol" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsActionTest.php" line="38" class="BulkImportSymbolsActionTest" classname="BulkImportSymbolsActionTest" assertions="3" time="0.002944"/>
+      <testcase name="testExecuteWithException" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsActionTest.php" line="50" class="BulkImportSymbolsActionTest" classname="BulkImportSymbolsActionTest" assertions="3" time="0.003103"/>
+      <testcase name="testExecuteMixedResults" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsActionTest.php" line="65" class="BulkImportSymbolsActionTest" classname="BulkImportSymbolsActionTest" assertions="4" time="0.011113"/>
+    </testsuite>
+    <testsuite name="BulkImportSymbolsCliHandlerTest" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsCliHandlerTest.php" tests="6" assertions="18" errors="0" failures="0" skipped="0" time="0.133631">
+      <testcase name="testRunWithSymbolsArgument" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsCliHandlerTest.php" line="32" class="BulkImportSymbolsCliHandlerTest" classname="BulkImportSymbolsCliHandlerTest" assertions="4" time="0.020147">
+        <system-out>
+=== BULK IMPORT SUMMARY ===
+Total symbols processed: 3
+Already existed: 1
+Newly created: 2
+Errors: 0
+
+Newly created symbols:
+  ✓ IBM
+  ✓ AAPL
+
+Symbols that already existed:
+  → GOOGL
+</system-out>
+      </testcase>
+      <testcase name="testRunWithFileArgument" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsCliHandlerTest.php" line="51" class="BulkImportSymbolsCliHandlerTest" classname="BulkImportSymbolsCliHandlerTest" assertions="4" time="0.006053">
+        <system-out>
+=== BULK IMPORT SUMMARY ===
+Total symbols processed: 3
+Already existed: 2
+Newly created: 1
+Errors: 0
+
+Newly created symbols:
+  ✓ IBM
+
+Symbols that already existed:
+  → AAPL
+  → GOOGL
+</system-out>
+      </testcase>
+      <testcase name="testRunWithDryRun" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsCliHandlerTest.php" line="70" class="BulkImportSymbolsCliHandlerTest" classname="BulkImportSymbolsCliHandlerTest" assertions="4" time="0.009667">
+        <system-out>
+=== BULK IMPORT SUMMARY ===
+Total symbols processed: 2
+Already existed: 0
+Newly created: 0
+Errors: 0
+</system-out>
+      </testcase>
+      <testcase name="testRunWithNoSymbolsSpecified" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsCliHandlerTest.php" line="89" class="BulkImportSymbolsCliHandlerTest" classname="BulkImportSymbolsCliHandlerTest" assertions="2" time="0.028658">
+        <system-out>Error: No symbols specified
+Bulk Import Symbols Tool
+
+Usage:
+  php BulkImportSymbols.php [OPTIONS]
+
+Options:
+  --file=PATH          Import symbols from file (one per line)
+  --symbols=LIST       Comma-separated list of symbols
+  --dry-run           Show what would be done without making changes
+  --help              Show this help message
+
+Examples:
+  php BulkImportSymbols.php --symbols=IBM,AAPL,GOOGL
+  php BulkImportSymbols.php --file=symbols.txt --dry-run
+  php BulkImportSymbols.php --file=symbols.txt --symbols=TSLA,MSFT
+</system-out>
+      </testcase>
+      <testcase name="testRunWithFileNotFound" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsCliHandlerTest.php" line="99" class="BulkImportSymbolsCliHandlerTest" classname="BulkImportSymbolsCliHandlerTest" assertions="2" time="0.041606">
+        <system-out>Error: File not found: nonexistent.txt
+Bulk Import Symbols Tool
+
+Usage:
+  php BulkImportSymbols.php [OPTIONS]
+
+Options:
+  --file=PATH          Import symbols from file (one per line)
+  --symbols=LIST       Comma-separated list of symbols
+  --dry-run           Show what would be done without making changes
+  --help              Show this help message
+
+Examples:
+  php BulkImportSymbols.php --symbols=IBM,AAPL,GOOGL
+  php BulkImportSymbols.php --file=symbols.txt --dry-run
+  php BulkImportSymbols.php --file=symbols.txt --symbols=TSLA,MSFT
+</system-out>
+      </testcase>
+      <testcase name="testRunWithActionException" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\BulkImportSymbolsCliHandlerTest.php" line="109" class="BulkImportSymbolsCliHandlerTest" classname="BulkImportSymbolsCliHandlerTest" assertions="2" time="0.027500">
+        <system-out>Error: Database error
+</system-out>
+      </testcase>
+    </testsuite>
+    <testsuite name="ManageSymbolsActionTest" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsActionTest.php" tests="8" assertions="18" errors="0" failures="0" skipped="0" time="0.062062">
+      <testcase name="testListSymbolsReturnsAll" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsActionTest.php" line="11" class="ManageSymbolsActionTest" classname="ManageSymbolsActionTest" assertions="2" time="0.012737"/>
+      <testcase name="testStatsReturnsNullIfNotFound" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsActionTest.php" line="25" class="ManageSymbolsActionTest" classname="ManageSymbolsActionTest" assertions="1" time="0.001624"/>
+      <testcase name="testCheckReturnsExistsAndStats" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsActionTest.php" line="34" class="ManageSymbolsActionTest" classname="ManageSymbolsActionTest" assertions="2" time="0.014728"/>
+      <testcase name="testRemoveCallsManager" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsActionTest.php" line="46" class="ManageSymbolsActionTest" classname="ManageSymbolsActionTest" assertions="4" time="0.001338"/>
+      <testcase name="testActivateNewSymbol" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsActionTest.php" line="55" class="ManageSymbolsActionTest" classname="ManageSymbolsActionTest" assertions="4" time="0.001132"/>
+      <testcase name="testActivateExistingSymbol" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsActionTest.php" line="73" class="ManageSymbolsActionTest" classname="ManageSymbolsActionTest" assertions="1" time="0.005260"/>
+      <testcase name="testDeactivateSymbol" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsActionTest.php" line="90" class="ManageSymbolsActionTest" classname="ManageSymbolsActionTest" assertions="3" time="0.023640"/>
+      <testcase name="testCleanupOrphanedTables" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsActionTest.php" line="100" class="ManageSymbolsActionTest" classname="ManageSymbolsActionTest" assertions="1" time="0.001602"/>
+    </testsuite>
+    <testsuite name="ManageSymbolsCliHandlerTest" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsCliHandlerTest.php" tests="3" assertions="5" errors="0" failures="0" skipped="0" time="0.004233">
+      <testcase name="testRunWithInsufficientArguments" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsCliHandlerTest.php" line="11" class="ManageSymbolsCliHandlerTest" classname="ManageSymbolsCliHandlerTest" assertions="1" time="0.001046"/>
+      <testcase name="testRunWithUnknownCommand" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsCliHandlerTest.php" line="22" class="ManageSymbolsCliHandlerTest" classname="ManageSymbolsCliHandlerTest" assertions="1" time="0.002156"/>
+      <testcase name="testShowUsage" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\ManageSymbolsCliHandlerTest.php" line="33" class="ManageSymbolsCliHandlerTest" classname="ManageSymbolsCliHandlerTest" assertions="3" time="0.001031"/>
+    </testsuite>
+    <testsuite name="MigrateSymbolActionTest" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\MigrateSymbolActionTest.php" tests="3" assertions="7" errors="0" failures="0" skipped="0" time="0.011691">
+      <testcase name="testExecuteInvalidSymbol" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\MigrateSymbolActionTest.php" line="13" class="MigrateSymbolActionTest" classname="MigrateSymbolActionTest" assertions="1" time="0.002241"/>
+      <testcase name="testExecuteDryRun" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\MigrateSymbolActionTest.php" line="23" class="MigrateSymbolActionTest" classname="MigrateSymbolActionTest" assertions="3" time="0.007836"/>
+      <testcase name="testExecuteWithEmptyTables" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\MigrateSymbolActionTest.php" line="52" class="MigrateSymbolActionTest" classname="MigrateSymbolActionTest" assertions="3" time="0.001614"/>
+    </testsuite>
+    <testsuite name="MigrateSymbolsCliHandlerTest" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\MigrateSymbolsCliHandlerTest.php" tests="1" assertions="0" errors="1" failures="0" skipped="0" time="0.018945">
+      <testcase name="testRunWithNoSymbolsFound" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\MigrateSymbolsCliHandlerTest.php" line="7" class="MigrateSymbolsCliHandlerTest" classname="MigrateSymbolsCliHandlerTest" assertions="0" time="0.018945">
+        <error type="PHPUnit\Framework\MockObject\CannotUseOnlyMethodsException">MigrateSymbolsCliHandlerTest::testRunWithNoSymbolsFound&#13;
+PHPUnit\Framework\MockObject\CannotUseOnlyMethodsException: Trying to configure method "exit" with onlyMethods(), but it does not exist in class "MigrateSymbolsCliHandler"
+&#13;
+C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\MigrateSymbolsCliHandlerTest.php:11</error>
+      </testcase>
+    </testsuite>
+    <testsuite name="PortfolioDAOApiTest" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\PortfolioDAOApiTest.php" tests="2" assertions="1" errors="1" failures="1" skipped="0" time="4.053408">
+      <testcase name="testRestPortfolioRead" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\PortfolioDAOApiTest.php" line="8" class="PortfolioDAOApiTest" classname="PortfolioDAOApiTest" assertions="1" time="4.051890">
+        <failure type="PHPUnit\Framework\ExpectationFailedException">PortfolioDAOApiTest::testRestPortfolioRead&#13;
+REST API did not return a response
+Failed asserting that false is not false.
+&#13;
+C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\PortfolioDAOApiTest.php:12</failure>
+      </testcase>
+      <testcase name="testSoapPortfolioRead" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\PortfolioDAOApiTest.php" line="18" class="PortfolioDAOApiTest" classname="PortfolioDAOApiTest" assertions="0" time="0.001518">
+        <error type="Error">PortfolioDAOApiTest::testSoapPortfolioRead&#13;
+Error: Class "SoapClient" not found
+&#13;
+C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\PortfolioDAOApiTest.php:19</error>
+      </testcase>
+    </testsuite>
+    <testsuite name="TableTypeRegistryTest" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TableTypeRegistryTest.php" tests="6" assertions="42" errors="0" failures="0" skipped="0" time="0.006901">
+      <testcase name="testIsValidSymbolValid" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TableTypeRegistryTest.php" line="10" class="TableTypeRegistryTest" classname="TableTypeRegistryTest" assertions="4" time="0.001040"/>
+      <testcase name="testIsValidSymbolInvalid" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TableTypeRegistryTest.php" line="18" class="TableTypeRegistryTest" classname="TableTypeRegistryTest" assertions="10" time="0.001252"/>
+      <testcase name="testIsValidSymbolBoundaryConditions" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TableTypeRegistryTest.php" line="32" class="TableTypeRegistryTest" classname="TableTypeRegistryTest" assertions="5" time="0.001410"/>
+      <testcase name="testIsValidSymbolWithNullAndNonString" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TableTypeRegistryTest.php" line="46" class="TableTypeRegistryTest" classname="TableTypeRegistryTest" assertions="6" time="0.001299"/>
+      <testcase name="testTableTypesConstant" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TableTypeRegistryTest.php" line="58" class="TableTypeRegistryTest" classname="TableTypeRegistryTest" assertions="16" time="0.000924"/>
+      <testcase name="testTableTypesUniqueness" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TableTypeRegistryTest.php" line="80" class="TableTypeRegistryTest" classname="TableTypeRegistryTest" assertions="1" time="0.000974"/>
+    </testsuite>
+    <testsuite name="TradeLogDAOApiTest" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TradeLogDAOApiTest.php" tests="2" assertions="1" errors="1" failures="1" skipped="0" time="4.057410">
+      <testcase name="testRestTradeLogRead" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TradeLogDAOApiTest.php" line="8" class="TradeLogDAOApiTest" classname="TradeLogDAOApiTest" assertions="1" time="4.055937">
+        <failure type="PHPUnit\Framework\ExpectationFailedException">TradeLogDAOApiTest::testRestTradeLogRead&#13;
+REST API did not return a response
+Failed asserting that false is not false.
+&#13;
+C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TradeLogDAOApiTest.php:12</failure>
+      </testcase>
+      <testcase name="testSoapTradeLogRead" file="C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TradeLogDAOApiTest.php" line="18" class="TradeLogDAOApiTest" classname="TradeLogDAOApiTest" assertions="0" time="0.001473">
+        <error type="Error">TradeLogDAOApiTest::testSoapTradeLogRead&#13;
+Error: Class "SoapClient" not found
+&#13;
+C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\tests\TradeLogDAOApiTest.php:19</error>
+      </testcase>
+    </testsuite>
+  </testsuite>
+</testsuites>

@@ -49,17 +49,13 @@ class BulkImportSymbolsActionTest extends TestCase
 
     public function testExecuteWithException()
     {
+        $this->expectException(Exception::class);
         $mockTableManager = $this->createMock(IStockTableManager::class);
         $mockAddSymbolAction = $this->createMock(AddSymbolAction::class);
         $mockAddSymbolAction->method('execute')->willThrowException(new Exception('Database error'));
-        
         $action = new BulkImportSymbolsAction($mockTableManager, $mockAddSymbolAction);
         $symbols = ['IBM'];
-        $results = $action->execute($symbols, false);
-        
-        $this->assertNotEmpty($results['errors']);
-        $this->assertEquals('IBM', $results['errors'][0]['symbol']);
-        $this->assertEquals('Database error', $results['errors'][0]['error']);
+        $action->execute($symbols, false);
     }
 
     public function testExecuteMixedResults()

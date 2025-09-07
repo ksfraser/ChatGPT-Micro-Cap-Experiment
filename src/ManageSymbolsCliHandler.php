@@ -10,7 +10,7 @@ class ManageSymbolsCliHandler
     {
         if (count($argv) < 2) {
             $this->showUsage();
-            exit(1);
+            throw new \RuntimeException('Insufficient arguments');
         }
         $command = $argv[1];
         $symbol = isset($argv[2]) ? strtoupper($argv[2]) : null;
@@ -33,7 +33,7 @@ class ManageSymbolsCliHandler
             case 'stats':
                 if (!$symbol) {
                     echo "Error: Symbol required for stats command\n";
-                    exit(1);
+                    throw new \RuntimeException('Symbol required for stats command');
                 }
                 $stats = $action->stats($symbol);
                 print_r($stats);
@@ -48,7 +48,7 @@ class ManageSymbolsCliHandler
             case 'remove':
                 if (!$symbol) {
                     echo "Error: Symbol required for remove command\n";
-                    exit(1);
+                    throw new \RuntimeException('Symbol required for remove command');
                 }
                 if (!$options['force']) {
                     echo "Type 'DELETE {$symbol}' to confirm: ";
@@ -57,7 +57,7 @@ class ManageSymbolsCliHandler
                     fclose($handle);
                     if ($line !== "DELETE {$symbol}") {
                         echo "Operation cancelled.\n";
-                        exit(0);
+                        throw new \RuntimeException('Operation cancelled');
                     }
                 }
                 $result = $action->remove($symbol);
@@ -66,7 +66,7 @@ class ManageSymbolsCliHandler
             case 'deactivate':
                 if (!$symbol) {
                     echo "Error: Symbol required for deactivate command\n";
-                    exit(1);
+                    throw new \RuntimeException('Symbol required for deactivate command');
                 }
                 $result = $action->deactivate($symbol);
                 echo $result ? "✓ Symbol {$symbol} deactivated.\n" : "✗ Failed to deactivate symbol.\n";
@@ -74,7 +74,7 @@ class ManageSymbolsCliHandler
             case 'activate':
                 if (!$symbol) {
                     echo "Error: Symbol required for activate command\n";
-                    exit(1);
+                    throw new \RuntimeException('Symbol required for activate command');
                 }
                 $result = $action->activate($symbol);
                 echo $result ? "✓ Symbol {$symbol} activated.\n" : "✗ Failed to activate symbol.\n";
@@ -93,7 +93,7 @@ class ManageSymbolsCliHandler
             default:
                 echo "Unknown command: {$command}\n\n";
                 $this->showUsage();
-                exit(1);
+                throw new \RuntimeException('Unknown command');
         }
     }
     private function showUsage()

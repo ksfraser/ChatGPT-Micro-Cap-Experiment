@@ -64,11 +64,12 @@ class PortfolioSOAPService {
         }
     }
 
-    private function getPortfolioInfo($type) {
     // ...existing code...
-}
+// End of class PortfolioSOAPService
 
-// Helper for trade log info (must be outside class due to PHP syntax error)
+// ...existing code...
+
+// Helper function outside the class
 function getTradeLogInfo($type) {
     $type = strtolower($type);
     switch ($type) {
@@ -88,31 +89,33 @@ function getTradeLogInfo($type) {
             throw new Exception('Unknown trade log type');
     }
 }
-        $type = strtolower($type);
-        switch ($type) {
-            case 'micro':
-                return [
-                    'csv' => '../data_micro_cap/micro_cap_portfolio.csv',
-                    'table' => 'portfolio_data',
-                    'dbclass' => 'MicroCapDatabaseConfig',
-                ];
-            case 'blue-chip':
-                return [
-                    'csv' => '../data_blue_chip/blue_chip_cap_portfolio.csv',
-                    'table' => 'portfolios_blue_chip',
-                    'dbclass' => 'LegacyDatabaseConfig',
-                ];
-            case 'small':
-            case 'small-cap':
-                return [
-                    'csv' => '../data_small_cap/small_cap_portfolio.csv',
-                    'table' => 'portfolios_small_cap',
-                    'dbclass' => 'LegacyDatabaseConfig',
-                ];
-            default:
-                throw new Exception('Unknown portfolio type');
-        }
+
+function getPortfolioInfo($type) {
+    $type = strtolower($type);
+    switch ($type) {
+        case 'micro':
+            return [
+                'csv' => '../data_micro_cap/micro_cap_portfolio.csv',
+                'table' => 'portfolio_data',
+                'dbclass' => 'MicroCapDatabaseConfig',
+            ];
+        case 'blue-chip':
+            return [
+                'csv' => '../data_blue_chip/blue_chip_cap_portfolio.csv',
+                'table' => 'portfolios_blue_chip',
+                'dbclass' => 'LegacyDatabaseConfig',
+            ];
+        case 'small':
+        case 'small-cap':
+            return [
+                'csv' => '../data_small_cap/small_cap_portfolio.csv',
+                'table' => 'portfolios_small_cap',
+                'dbclass' => 'LegacyDatabaseConfig',
+            ];
+        default:
+            throw new Exception('Unknown portfolio type');
     }
+}
 }
 
 // SOAP server endpoint

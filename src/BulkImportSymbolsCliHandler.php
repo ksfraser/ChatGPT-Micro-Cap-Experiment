@@ -68,7 +68,7 @@ class BulkImportSymbolsCliHandler
                 $dryRun = true;
             } elseif ($arg === '--help') {
                 $this->showUsage();
-                exit(0);
+                return ['help' => true];
             } elseif (strpos($arg, '--file=') === 0) {
                 $options['file'] = substr($arg, 7);
             } elseif (strpos($arg, '--symbols=') === 0) {

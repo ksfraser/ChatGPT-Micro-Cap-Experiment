@@ -91,9 +91,8 @@ class BulkImportSymbolsCliHandlerTest extends TestCase
         $this->mockBulkImportAction
             ->expects($this->never())
             ->method('execute');
-
-        $result = $this->handler->run(['script.php']);
-        $this->assertEquals(1, $result);
+        $this->expectException(InvalidArgumentException::class);
+        $this->handler->run(['script.php']);
     }
 
     public function testRunWithFileNotFound()
@@ -101,9 +100,8 @@ class BulkImportSymbolsCliHandlerTest extends TestCase
         $this->mockBulkImportAction
             ->expects($this->never())
             ->method('execute');
-
-        $result = $this->handler->run(['script.php', '--file=nonexistent.txt']);
-        $this->assertEquals(1, $result);
+        $this->expectException(InvalidArgumentException::class);
+        $this->handler->run(['script.php', '--file=nonexistent.txt']);
     }
 
     public function testRunWithActionException()
@@ -112,8 +110,7 @@ class BulkImportSymbolsCliHandlerTest extends TestCase
             ->expects($this->once())
             ->method('execute')
             ->willThrowException(new Exception('Database error'));
-
-        $result = $this->handler->run(['script.php', '--symbols=IBM']);
-        $this->assertEquals(1, $result);
+        $this->expectException(Exception::class);
+        $this->handler->run(['script.php', '--symbols=IBM']);
     }
 }

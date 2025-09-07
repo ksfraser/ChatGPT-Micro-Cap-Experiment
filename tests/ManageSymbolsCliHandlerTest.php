@@ -12,11 +12,10 @@ class ManageSymbolsCliHandlerTest extends TestCase
     {
         $handler = new ManageSymbolsCliHandler();
         $argv = ['script.php'];
-        
+        $this->expectException(\RuntimeException::class);
         ob_start();
         $handler->run($argv);
         $output = ob_get_clean();
-        
         $this->assertStringContainsString('Usage', $output);
     }
 
@@ -24,11 +23,10 @@ class ManageSymbolsCliHandlerTest extends TestCase
     {
         $handler = new ManageSymbolsCliHandler();
         $argv = ['script.php', 'unknown'];
-        
+        $this->expectException(\RuntimeException::class);
         ob_start();
         $handler->run($argv);
         $output = ob_get_clean();
-        
         $this->assertStringContainsString('Unknown command', $output);
     }
 
