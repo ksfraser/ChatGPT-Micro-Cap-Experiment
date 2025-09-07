@@ -12,17 +12,12 @@ class SchemaMigratorTest extends TestCase
 
     protected function setUp(): void
     {
-        // Use actual database connection for testing
-        require_once __DIR__ . '/../web_ui/DbConfigClasses.php';
-        try {
-            $this->pdo = LegacyDatabaseConfig::createConnection();
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (Exception $e) {
-            $this->markTestSkipped('Database connection not available: ' . $e->getMessage());
-        }
+        // Use mock PDO for testing
+        require_once __DIR__ . '/MockPDO.php';
+        $this->pdo = new MockPDO();
         
         // Create temporary schema directory
-        $this->tempSchemaDir = sys_get_temp_dir() . '/test_schema_' . uniqid();
+        $this->tempSchemaDir = sys_get_temp_dir() . '/schema_test_' . uniqid();
         mkdir($this->tempSchemaDir, 0777, true);
         
         $this->migrator = new SchemaMigrator($this->pdo, $this->tempSchemaDir);

@@ -10,15 +10,10 @@ class TestDAO extends CommonDAO
     public function __construct($dbConfigClass = null)
     {
         if ($dbConfigClass === null) {
-            // For testing, try to use actual database connection
-            try {
-                require_once __DIR__ . '/../web_ui/DbConfigClasses.php';
-                $this->pdo = LegacyDatabaseConfig::createConnection();
-                $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                $this->errors = [];
-            } catch (Exception $e) {
-                throw new Exception('Database connection not available for testing: ' . $e->getMessage());
-            }
+            // Use mock PDO for testing
+            require_once __DIR__ . '/MockPDO.php';
+            $this->pdo = new MockPDO();
+            $this->errors = [];
         } else {
             parent::__construct($dbConfigClass);
         }
@@ -68,7 +63,9 @@ class CommonDAOTest extends TestCase
     public function testGetPdoReturnsConnection()
     {
         $pdo = $this->dao->getPdo();
-        $this->assertInstanceOf(PDO::class, $pdo);
+        $this->assertNotNull($pdo);
+        // Check if it's either a real PDO or our MockPDO
+        $this->assertTrue($pdo instanceof PDO || $pdo instanceof MockPDO, 'Should return a PDO or MockPDO instance');
     }
 
     public function testWriteCsvCreatesFile()
