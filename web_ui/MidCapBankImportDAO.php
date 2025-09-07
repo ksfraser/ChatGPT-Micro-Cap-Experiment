@@ -6,10 +6,12 @@ require_once __DIR__ . '/SchemaMigrator.php';
 class MidCapBankImportDAO extends CommonDAO {
     public function __construct() {
         parent::__construct('LegacyDatabaseConfig');
-        // Run schema migrations on instantiation
-        $schemaDir = __DIR__ . '/schema';
-        $migrator = new SchemaMigrator($this->pdo, $schemaDir);
-        $migrator->migrate();
+        // Run schema migrations on instantiation only if we have a valid connection
+        if ($this->pdo) {
+            $schemaDir = __DIR__ . '/schema';
+            $migrator = new SchemaMigrator($this->pdo, $schemaDir);
+            $migrator->migrate();
+        }
     }
     // Parse Account Holdings CSV
     public function parseAccountHoldingsCSV($filePath) {

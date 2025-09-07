@@ -1,7 +1,3 @@
-    // Public accessor for PDO connection
-    public function getPdo() {
-        return $this->pdo;
-    }
 <?php
 /**
  * CommonDAO: Base class for all DAOs, handles DB connection, error logging, and config.
@@ -58,6 +54,12 @@ abstract class CommonDAO {
     public function getErrors() {
         return $this->errors;
     }
+
+    // Public accessor for PDO connection
+    public function getPdo() {
+        return $this->pdo;
+    }
+
     protected function logError($msg) {
         $this->errors[] = $msg;
     }

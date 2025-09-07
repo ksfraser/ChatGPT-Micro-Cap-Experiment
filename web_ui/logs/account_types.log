@@ -1,0 +1,2 @@
+[2025-09-07 19:52:18] [ERROR] Database connection failed {"config_class":"LegacyDatabaseConfig","errors":["DB connection failed: could not find driver"]}
+[2025-09-07 19:53:47] [ERROR] Database connection failed {"config_class":"LegacyDatabaseConfig","errors":["DB connection failed: could not find driver"]}
