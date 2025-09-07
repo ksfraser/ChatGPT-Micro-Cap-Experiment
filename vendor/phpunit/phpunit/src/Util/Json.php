@@ -9,56 +9,54 @@
  */
 namespace PHPUnit\Util;
 
-use const JSON_ERROR_NONE;
 use const JSON_PRETTY_PRINT;
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
-use const SORT_STRING;
-use function assert;
+use function count;
+use function is_array;
 use function is_object;
-use function is_scalar;
 use function json_decode;
 use function json_encode;
 use function json_last_error;
 use function ksort;
+use PHPUnit\Framework\Exception;
 
 /**
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
- *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final readonly class Json
+final class Json
 {
     /**
-     * @throws InvalidJsonException
+     * Prettify json string.
+     *
+     * @throws Exception
      */
     public static function prettify(string $json): string
     {
         $decodedJson = json_decode($json, false);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new InvalidJsonException;
+        if (json_last_error()) {
+            throw new Exception(
+                'Cannot prettify invalid json',
+            );
         }
 
-        $result = json_encode($decodedJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-
-        assert($result !== false);
-
-        return $result;
+        return json_encode($decodedJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     /**
-     * Element 0 is true and element 1 is null when JSON decoding did not work.
-     * * Element 0 is false and element 1 has the decoded value when JSON decoding did work.
-     * * This is used to avoid ambiguity with JSON strings consisting entirely of 'null' or 'false'.
+     * To allow comparison of JSON strings, first process them into a consistent
+     * format so that they can be compared as strings.
      *
-     * @return array{0: false, 1: mixed}|array{0: true, 1: null}
+     * @return array ($error, $canonicalized_json)  The $error parameter is used
+     *               to indicate an error decoding the json. This is used to avoid ambiguity
+     *               with JSON strings consisting entirely of 'null' or 'false'.
      */
     public static function canonicalize(string $json): array
     {
         $decodedJson = json_decode($json);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if (json_last_error()) {
             return [true, null];
         }
 
@@ -75,32 +73,26 @@ final readonly class Json
      * Sort all array keys to ensure both the expected and actual values have
      * their keys in the same order.
      */
-    private static function recursiveSort(mixed &$json): void
+    private static function recursiveSort(&$json): void
     {
-        if ($json === null || $json === [] || is_scalar($json)) {
-            return;
+        if (!is_array($json)) {
+            // If the object is not empty, change it to an associative array
+            // so we can sort the keys (and we will still re-encode it
+            // correctly, since PHP encodes associative arrays as JSON objects.)
+            // But EMPTY objects MUST remain empty objects. (Otherwise we will
+            // re-encode it as a JSON array rather than a JSON object.)
+            // See #2919.
+            if (is_object($json) && count((array) $json) > 0) {
+                $json = (array) $json;
+            } else {
+                return;
+            }
         }
 
-        $isObject = is_object($json);
+        ksort($json);
 
-        if ($isObject) {
-            // Objects need to be sorted during canonicalization to ensure
-            // correct comparsion since JSON objects are unordered. It must be
-            // kept as an object so that the value correctly stays as a JSON
-            // object instead of potentially being converted to an array. This
-            // approach ensures that numeric string JSON keys are preserved and
-            // don't risk being flattened due to PHP's array semantics.
-            // See #2919, #4584, #4674
-            $json = (array) $json;
-            ksort($json, SORT_STRING);
-        }
-
-        foreach ($json as &$value) {
+        foreach ($json as $key => &$value) {
             self::recursiveSort($value);
-        }
-
-        if ($isObject) {
-            $json = (object) $json;
         }
     }
 }

@@ -10,41 +10,36 @@
 namespace PHPUnit\Util;
 
 use const DIRECTORY_SEPARATOR;
-use const PHP_EOL;
+use function array_keys;
 use function array_map;
-use function array_walk;
+use function array_values;
 use function count;
 use function explode;
 use function implode;
-use function max;
 use function min;
 use function preg_replace;
 use function preg_replace_callback;
-use function preg_split;
 use function sprintf;
-use function str_pad;
 use function strtr;
 use function trim;
 
 /**
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
- *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 final class Color
 {
     /**
-     * @var non-empty-array<non-empty-string, non-empty-string>
+     * @var array<string,string>
      */
-    private const array WHITESPACE_MAP = [
+    private const WHITESPACE_MAP = [
         ' '  => '·',
         "\t" => '⇥',
     ];
 
     /**
-     * @var non-empty-array<non-empty-string, non-empty-string>
+     * @var array<string,string>
      */
-    private const array WHITESPACE_EOL_MAP = [
+    private const WHITESPACE_EOL_MAP = [
         ' '  => '·',
         "\t" => '⇥',
         "\n" => '↵',
@@ -52,9 +47,9 @@ final class Color
     ];
 
     /**
-     * @var non-empty-array<non-empty-string, non-empty-string>
+     * @var array<string,string>
      */
-    private const array ANSI_CODES = [
+    private static $ansiCodes = [
         'reset'      => '0',
         'bold'       => '1',
         'dim'        => '2',
@@ -90,46 +85,29 @@ final class Color
         $styles = [];
 
         foreach ($codes as $code) {
-            if (isset(self::ANSI_CODES[$code])) {
-                $styles[] = self::ANSI_CODES[$code];
+            if (isset(self::$ansiCodes[$code])) {
+                $styles[] = self::$ansiCodes[$code] ?? '';
             }
         }
 
-        if ($styles === []) {
+        if (empty($styles)) {
             return $buffer;
         }
 
         return self::optimizeColor(sprintf("\x1b[%sm", implode(';', $styles)) . $buffer . "\x1b[0m");
     }
 
-    public static function colorizeTextBox(string $color, string $buffer, ?int $columns = null): string
+    public static function colorizePath(string $path, ?string $prevPath = null, bool $colorizeFilename = false): string
     {
-        $lines       = preg_split('/\r\n|\r|\n/', $buffer);
-        $maxBoxWidth = max(array_map('\strlen', $lines));
-
-        if ($columns !== null) {
-            $maxBoxWidth = min($maxBoxWidth, $columns);
+        if ($prevPath === null) {
+            $prevPath = '';
         }
 
-        array_walk($lines, static function (string &$line) use ($color, $maxBoxWidth): void
-        {
-            $line = self::colorize($color, str_pad($line, $maxBoxWidth));
-        });
+        $path     = explode(DIRECTORY_SEPARATOR, $path);
+        $prevPath = explode(DIRECTORY_SEPARATOR, $prevPath);
 
-        return implode(PHP_EOL, $lines);
-    }
-
-    public static function colorizePath(string $path, ?string $previousPath = null, bool $colorizeFilename = false): string
-    {
-        if ($previousPath === null) {
-            $previousPath = '';
-        }
-
-        $path         = explode(DIRECTORY_SEPARATOR, $path);
-        $previousPath = explode(DIRECTORY_SEPARATOR, $previousPath);
-
-        for ($i = 0; $i < min(count($path), count($previousPath)); $i++) {
-            if ($path[$i] === $previousPath[$i]) {
+        for ($i = 0; $i < min(count($path), count($prevPath)); $i++) {
+            if ($path[$i] == $prevPath[$i]) {
                 $path[$i] = self::dim($path[$i]);
             }
         }
@@ -137,8 +115,11 @@ final class Color
         if ($colorizeFilename) {
             $last        = count($path) - 1;
             $path[$last] = preg_replace_callback(
-                '/([\-_.]+|phpt$)/',
-                static fn (array $matches) => self::dim($matches[0]),
+                '/([\-_\.]+|phpt$)/',
+                static function ($matches)
+                {
+                    return self::dim($matches[0]);
+                },
                 $path[$last],
             );
         }
@@ -159,27 +140,20 @@ final class Color
     {
         $replaceMap = $visualizeEOL ? self::WHITESPACE_EOL_MAP : self::WHITESPACE_MAP;
 
-        return preg_replace_callback(
-            '/\s+/',
-            static fn (array $matches) => self::dim(strtr($matches[0], $replaceMap)),
-            $buffer,
-        );
+        return preg_replace_callback('/\s+/', static function ($matches) use ($replaceMap)
+        {
+            return self::dim(strtr($matches[0], $replaceMap));
+        }, $buffer);
     }
 
     private static function optimizeColor(string $buffer): string
     {
-        return preg_replace(
-            [
-                "/\e\\[22m\e\\[2m/",
-                "/\e\\[([^m]*)m\e\\[([1-9][0-9;]*)m/",
-                "/(\e\\[[^m]*m)+(\e\\[0m)/",
-            ],
-            [
-                '',
-                "\e[$1;$2m",
-                '$2',
-            ],
-            $buffer,
-        );
+        $patterns = [
+            "/\e\\[22m\e\\[2m/"                   => '',
+            "/\e\\[([^m]*)m\e\\[([1-9][0-9;]*)m/" => "\e[$1;$2m",
+            "/(\e\\[[^m]*m)+(\e\\[0m)/"           => '$2',
+        ];
+
+        return preg_replace(array_keys($patterns), array_values($patterns), $buffer);
     }
 }

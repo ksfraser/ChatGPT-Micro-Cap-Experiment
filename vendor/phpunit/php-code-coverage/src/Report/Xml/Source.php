@@ -17,9 +17,10 @@ use TheSeer\Tokenizer\XMLSerializer;
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
-final readonly class Source
+final class Source
 {
-    private DOMElement $context;
+    /** @var DOMElement */
+    private $context;
 
     public function __construct(DOMElement $context)
     {
@@ -35,7 +36,7 @@ final readonly class Source
 
         $context->parentNode->replaceChild(
             $context->ownerDocument->importNode($srcDom->documentElement, true),
-            $context,
+            $context
         );
     }
 }

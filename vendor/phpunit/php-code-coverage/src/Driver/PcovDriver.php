@@ -18,29 +18,31 @@ use function pcov\start;
 use function pcov\stop;
 use function pcov\waiting;
 use function phpversion;
-use SebastianBergmann\CodeCoverage\Data\RawCodeCoverageData;
 use SebastianBergmann\CodeCoverage\Filter;
+use SebastianBergmann\CodeCoverage\RawCodeCoverageData;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
 final class PcovDriver extends Driver
 {
-    private readonly Filter $filter;
+    /**
+     * @var Filter
+     */
+    private $filter;
 
     /**
      * @throws PcovNotAvailableException
      */
     public function __construct(Filter $filter)
     {
-        $this->ensurePcovIsAvailable();
+        if (!extension_loaded('pcov')) {
+            throw new PcovNotAvailableException;
+        }
 
         $this->filter = $filter;
     }
 
-    /**
-     * @codeCoverageIgnore
-     */
     public function start(): void
     {
         start();
@@ -50,11 +52,10 @@ final class PcovDriver extends Driver
     {
         stop();
 
-        // @codeCoverageIgnoreStart
         $filesToCollectCoverageFor = waiting();
         $collected                 = [];
 
-        if ($filesToCollectCoverageFor !== []) {
+        if ($filesToCollectCoverageFor) {
             if (!$this->filter->isEmpty()) {
                 $filesToCollectCoverageFor = array_intersect($filesToCollectCoverageFor, $this->filter->files());
             }
@@ -65,21 +66,10 @@ final class PcovDriver extends Driver
         }
 
         return RawCodeCoverageData::fromXdebugWithoutPathCoverage($collected);
-        // @codeCoverageIgnoreEnd
     }
 
     public function nameAndVersion(): string
     {
         return 'PCOV ' . phpversion('pcov');
-    }
-
-    /**
-     * @throws PcovNotAvailableException
-     */
-    private function ensurePcovIsAvailable(): void
-    {
-        if (!extension_loaded('pcov')) {
-            throw new PcovNotAvailableException;
-        }
     }
 }

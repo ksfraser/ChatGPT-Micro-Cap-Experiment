@@ -9,45 +9,23 @@
  */
 namespace SebastianBergmann\CodeCoverage\StaticAnalysis;
 
-use function file_get_contents;
-
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
-final class FileAnalyser
+interface FileAnalyser
 {
-    private readonly SourceAnalyser $sourceAnalyser;
-    private readonly bool $useAnnotationsForIgnoringCode;
-    private readonly bool $ignoreDeprecatedCode;
+    public function classesIn(string $filename): array;
+
+    public function traitsIn(string $filename): array;
+
+    public function functionsIn(string $filename): array;
 
     /**
-     * @var array<non-empty-string, AnalysisResult>
+     * @psalm-return array{linesOfCode: int, commentLinesOfCode: int, nonCommentLinesOfCode: int}
      */
-    private array $cache = [];
+    public function linesOfCodeFor(string $filename): array;
 
-    public function __construct(SourceAnalyser $sourceAnalyser, bool $useAnnotationsForIgnoringCode, bool $ignoreDeprecatedCode)
-    {
-        $this->sourceAnalyser                = $sourceAnalyser;
-        $this->useAnnotationsForIgnoringCode = $useAnnotationsForIgnoringCode;
-        $this->ignoreDeprecatedCode          = $ignoreDeprecatedCode;
-    }
+    public function executableLinesIn(string $filename): array;
 
-    /**
-     * @param non-empty-string $sourceCodeFile
-     */
-    public function analyse(string $sourceCodeFile): AnalysisResult
-    {
-        if (isset($this->cache[$sourceCodeFile])) {
-            return $this->cache[$sourceCodeFile];
-        }
-
-        $this->cache[$sourceCodeFile] = $this->sourceAnalyser->analyse(
-            $sourceCodeFile,
-            file_get_contents($sourceCodeFile),
-            $this->useAnnotationsForIgnoringCode,
-            $this->ignoreDeprecatedCode,
-        );
-
-        return $this->cache[$sourceCodeFile];
-    }
+    public function ignoredLinesFor(string $filename): array;
 }

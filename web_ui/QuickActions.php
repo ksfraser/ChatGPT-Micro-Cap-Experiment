@@ -16,6 +16,7 @@ class QuickActions {
     ['label' => 'Admin Brokerages', 'href' => 'admin_brokerages.php'],
     ['label' => 'Admin Account Types', 'href' => 'admin_account_types.php'],
     ['label' => 'Bank Import', 'href' => 'bank_import.php'],
+    ['label' => 'User Management', 'href' => 'admin_users.php'],
     ];
 
     public static function render($extraClass = '') {

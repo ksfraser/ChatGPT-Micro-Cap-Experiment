@@ -9,7 +9,7 @@
  */
 namespace SebastianBergmann\CodeCoverage\Report\Xml;
 
-use function assert;
+use function constant;
 use function phpversion;
 use DateTimeImmutable;
 use DOMElement;
@@ -18,9 +18,12 @@ use SebastianBergmann\Environment\Runtime;
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
-final readonly class BuildInformation
+final class BuildInformation
 {
-    private DOMElement $contextNode;
+    /**
+     * @var DOMElement
+     */
+    private $contextNode;
 
     public function __construct(DOMElement $contextNode)
     {
@@ -36,6 +39,11 @@ final readonly class BuildInformation
         $runtimeNode->setAttribute('url', $runtime->getVendorUrl());
 
         $driverNode = $this->nodeByName('driver');
+
+        if ($runtime->hasPHPDBGCodeCoverage()) {
+            $driverNode->setAttribute('name', 'phpdbg');
+            $driverNode->setAttribute('version', constant('PHPDBG_VERSION'));
+        }
 
         if ($runtime->hasXdebug()) {
             $driverNode->setAttribute('name', 'xdebug');
@@ -63,19 +71,17 @@ final readonly class BuildInformation
     {
         $node = $this->contextNode->getElementsByTagNameNS(
             'https://schema.phpunit.de/coverage/1.0',
-            $name,
+            $name
         )->item(0);
 
-        if ($node === null) {
+        if (!$node) {
             $node = $this->contextNode->appendChild(
                 $this->contextNode->ownerDocument->createElementNS(
                     'https://schema.phpunit.de/coverage/1.0',
-                    $name,
-                ),
+                    $name
+                )
             );
         }
-
-        assert($node instanceof DOMElement);
 
         return $node;
     }

@@ -14,10 +14,17 @@ use function sprintf;
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
-final readonly class Percentage
+final class Percentage
 {
-    private float $fraction;
-    private float $total;
+    /**
+     * @var float
+     */
+    private $fraction;
+
+    /**
+     * @var float
+     */
+    private $total;
 
     public static function fromFractionAndTotal(float $fraction, float $total): self
     {

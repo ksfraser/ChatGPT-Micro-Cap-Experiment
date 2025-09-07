@@ -9,8 +9,7 @@
  */
 namespace PHPUnit\Framework\Constraint;
 
-use function assert;
-use function count;
+use function get_class;
 use function is_object;
 use PHPUnit\Framework\ActualValueIsNotAnObjectException;
 use PHPUnit\Framework\ComparisonMethodDoesNotAcceptParameterTypeException;
@@ -26,8 +25,15 @@ use ReflectionObject;
  */
 final class ObjectEquals extends Constraint
 {
-    private readonly object $expected;
-    private readonly string $method;
+    /**
+     * @var object
+     */
+    private $expected;
+
+    /**
+     * @var string
+     */
+    private $method;
 
     public function __construct(object $object, string $method = 'equals')
     {
@@ -48,7 +54,7 @@ final class ObjectEquals extends Constraint
      * @throws ComparisonMethodDoesNotDeclareParameterTypeException
      * @throws ComparisonMethodDoesNotExistException
      */
-    protected function matches(mixed $other): bool
+    protected function matches($other): bool
     {
         if (!is_object($other)) {
             throw new ActualValueIsNotAnObjectException;
@@ -58,16 +64,17 @@ final class ObjectEquals extends Constraint
 
         if (!$object->hasMethod($this->method)) {
             throw new ComparisonMethodDoesNotExistException(
-                $other::class,
+                get_class($other),
                 $this->method,
             );
         }
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $method = $object->getMethod($this->method);
 
         if (!$method->hasReturnType()) {
             throw new ComparisonMethodDoesNotDeclareBoolReturnTypeException(
-                $other::class,
+                get_class($other),
                 $this->method,
             );
         }
@@ -76,38 +83,37 @@ final class ObjectEquals extends Constraint
 
         if (!$returnType instanceof ReflectionNamedType) {
             throw new ComparisonMethodDoesNotDeclareBoolReturnTypeException(
-                $other::class,
+                get_class($other),
                 $this->method,
             );
         }
 
         if ($returnType->allowsNull()) {
             throw new ComparisonMethodDoesNotDeclareBoolReturnTypeException(
-                $other::class,
+                get_class($other),
                 $this->method,
             );
         }
 
         if ($returnType->getName() !== 'bool') {
             throw new ComparisonMethodDoesNotDeclareBoolReturnTypeException(
-                $other::class,
+                get_class($other),
                 $this->method,
             );
         }
 
         if ($method->getNumberOfParameters() !== 1 || $method->getNumberOfRequiredParameters() !== 1) {
             throw new ComparisonMethodDoesNotDeclareExactlyOneParameterException(
-                $other::class,
+                get_class($other),
                 $this->method,
             );
         }
 
-        assert(count($method->getParameters()) > 0);
         $parameter = $method->getParameters()[0];
 
         if (!$parameter->hasType()) {
             throw new ComparisonMethodDoesNotDeclareParameterTypeException(
-                $other::class,
+                get_class($other),
                 $this->method,
             );
         }
@@ -116,7 +122,7 @@ final class ObjectEquals extends Constraint
 
         if (!$type instanceof ReflectionNamedType) {
             throw new ComparisonMethodDoesNotDeclareParameterTypeException(
-                $other::class,
+                get_class($other),
                 $this->method,
             );
         }
@@ -124,22 +130,21 @@ final class ObjectEquals extends Constraint
         $typeName = $type->getName();
 
         if ($typeName === 'self') {
-            $typeName = $other::class;
+            $typeName = get_class($other);
         }
 
         if (!$this->expected instanceof $typeName) {
             throw new ComparisonMethodDoesNotAcceptParameterTypeException(
-                $other::class,
+                get_class($other),
                 $this->method,
-                $this->expected::class,
+                get_class($this->expected),
             );
         }
 
-        /** @phpstan-ignore method.dynamicName */
         return $other->{$this->method}($this->expected);
     }
 
-    protected function failureDescription(mixed $other): string
+    protected function failureDescription($other): string
     {
         return $this->toString();
     }
