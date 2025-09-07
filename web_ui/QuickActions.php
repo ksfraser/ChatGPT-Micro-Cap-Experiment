@@ -13,6 +13,9 @@ class QuickActions {
     ['label' => 'Automation Monitoring', 'href' => 'automation_monitoring.php'],
     ['label' => 'Automation Config', 'href' => 'automation_config.php'],
         ['label' => 'System Status', 'href' => 'system_status.php'],
+    ['label' => 'Admin Brokerages', 'href' => 'admin_brokerages.php'],
+    ['label' => 'Admin Account Types', 'href' => 'admin_account_types.php'],
+    ['label' => 'Bank Import', 'href' => 'bank_import.php'],
     ];
 
     public static function render($extraClass = '') {

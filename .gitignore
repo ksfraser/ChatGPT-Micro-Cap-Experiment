@@ -16,3 +16,10 @@ db_config.ini
 # Also ignore any CSV files that might contain sensitive data
 #**/chatgpt_portfolio_update.csv
 #**/chatgpt_trade_log.csv
+
+# Ignore all data CSVs created by DAOs
+/data_*.csv
+/bank_imports/*.csv
+
+# Ignore bank import files
+/bank_imports/
