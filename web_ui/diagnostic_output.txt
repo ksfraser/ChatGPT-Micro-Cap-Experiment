@@ -1,0 +1,70 @@
+=== Database and Registration Diagnostic ===
+Timestamp: 2025-09-07 23:32:44
+
+1. Configuration Files Check:
+   ✗ Missing: web_ui/db_config.yml
+   ✓ Found: db_config.yml
+     Size: 281 bytes
+   ✗ Missing: web_ui/db_config.ini
+   ✓ Found: db_config.ini
+     Size: 290 bytes
+
+2. Loading Configuration Classes:
+   ✓ DbConfigClasses.php loaded successfully
+
+3. Configuration Loading Test:
+   ✓ Configuration loaded successfully
+   Config structure:
+   Array
+   (
+       [database] => Array
+           (
+               [host] => fhsws001.ksfraser.com
+               [port] => 3306
+               [username] => stocks
+               [password] => stocks
+               [charset] => utf8mb4
+               [legacy] => Array
+                   (
+                       [database] => stock_market_2
+                       [micro_cap] => Array
+                           (
+                               [database] => stock_market_micro_cap_trading
+                           )
+   
+                   )
+   
+           )
+   
+   )
+   
+
+4. Processed Configuration Test:
+   ✓ Processed configuration:
+     host: fhsws001.ksfraser.com
+     port: 3306
+     dbname: stock_market_2
+     username: stocks
+     password: [HIDDEN]
+     charset: utf8mb4
+
+5. Database Connection Test:
+   ✗ Database connection failed: could not find driver
+   Error code: 0
+
+6. UserAuthDAO Loading Test:
+   ✓ UserAuthDAO.php loaded successfully
+   ✓ UserAuthDAO instance created
+
+7. User Listing Test:
+   ✓ getAllUsers() successful
+   Found 0 users
+
+8. User Registration Test:
+   Attempting to register user: diagnostic_user_1757287964
+   ✗ Registration test failed: Database connection not available
+   Stack trace:
+   #0 C:\Users\prote\Documents\ChatGPT-Micro-Cap-Experiment\web_ui\diagnostic.php(135): UserAuthDAO->registerUser()
+   #1 {main}
+
+=== End of Diagnostic ===

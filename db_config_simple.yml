@@ -1,0 +1,27 @@
+# Database Configuration
+# This file contains database connection settings for both micro-cap and legacy systems
+# Simple format compatible with the basic YAML parser
+
+database:
+host: fhsws001.ksfraser.com
+port: 3306
+username: stocks
+password: stocks
+charset: utf8mb4
+
+micro_cap:
+database: stock_market_micro_cap_trading
+
+legacy:
+database: stock_market_2
+
+# Application Settings
+app:
+debug: false
+timezone: America/New_York
+cache_enabled: true
+
+# Logging
+logging:
+level: INFO
+file: logs/stock_analysis.log
