@@ -3,30 +3,19 @@
  * PortfolioDAO: Handles portfolio data for any type (micro, blue-chip, small-cap, etc.) with DB-first read, CSV fallback, and dual-write.
  * On write: writes CSV first, then DB. On read: tries DB, falls back to CSV. Logs errors and stores failed data in session for retry.
  */
-class PortfolioDAO {
+
+require_once __DIR__ . '/CommonDAO.php';
+class PortfolioDAO extends CommonDAO {
     private $csvPath;
-    private $pdo;
-    private $errors = [];
     private $sessionKey;
     private $tableName;
 
     public function __construct($csvPath, $tableName, $dbConfigClass) {
+        parent::__construct($dbConfigClass);
         $this->csvPath = $csvPath;
         $this->tableName = $tableName;
-        $this->pdo = null;
         $this->sessionKey = 'portfolio_retry_' . $tableName;
         if (session_status() === PHP_SESSION_NONE) session_start();
-        $this->connectDb($dbConfigClass);
-    }
-
-    private function connectDb($dbConfigClass) {
-        try {
-            require_once __DIR__ . '/DbConfigClasses.php';
-            $this->pdo = $dbConfigClass::createConnection();
-        } catch (Exception $e) {
-            $this->pdo = null;
-            $this->logError('DB connection failed: ' . $e->getMessage());
-        }
     }
 
     public function readPortfolio() {
@@ -55,15 +44,10 @@ class PortfolioDAO {
         return $csvOk && $dbOk;
     }
 
+
     private function readPortfolioCsv() {
-        if (!file_exists($this->csvPath)) return [];
-        $rows = array_map('str_getcsv', file($this->csvPath));
-        $header = $rows[0];
-        $data = [];
-        for ($i = 1; $i < count($rows); $i++) {
-            $row = array_combine($header, $rows[$i]);
-            $data[] = $row;
-        }
+        $data = $this->readCsv($this->csvPath);
+        if (empty($data)) return [];
         // Get latest date
         $dates = array_column($data, 'Date');
         $latest = max($dates);
@@ -71,18 +55,7 @@ class PortfolioDAO {
     }
 
     private function writePortfolioCsv($rows) {
-        try {
-            if (empty($rows)) return false;
-            $header = array_keys($rows[0]);
-            $fp = fopen($this->csvPath, 'w');
-            fputcsv($fp, $header);
-            foreach ($rows as $row) fputcsv($fp, $row);
-            fclose($fp);
-            return true;
-        } catch (Exception $e) {
-            $this->logError('CSV write failed: ' . $e->getMessage());
-            return false;
-        }
+        return $this->writeCsv($this->csvPath, $rows);
     }
 
     private function writePortfolioDb($rows) {
@@ -110,7 +83,7 @@ class PortfolioDAO {
     public function getErrors() {
         return $this->errors;
     }
-    private function logError($msg) {
+    protected function logError($msg) {
         $this->errors[] = $msg;
     }
     public function getRetryData() {

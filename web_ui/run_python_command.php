@@ -6,6 +6,8 @@ $command = null;
 if (isset($_POST['command_key'])) {
     // Map command_key to actual script/args
     $map = [
+    // Trade page custom commands
+    'enhanced_trading_script_db_query' => '-c "from enhanced_trading_script import *; engine = create_trading_engine(\'micro\'); print(\'Trade data available via Python\')"',
         // Project root scripts
         'enhanced_trading_script' => 'enhanced_trading_script.py',
         'enhanced_automation' => 'enhanced_automation.py',
@@ -71,8 +73,10 @@ if (stripos(PHP_OS, 'WIN') === 0) {
     $python = 'python3';
 }
 
-// Only allow safe commands (basic check)
-$allowed = [
+    // Only allow safe commands (basic check)
+    $allowed = [
+    // Trade page custom commands
+    '-c "from enhanced_trading_script import *; engine = create_trading_engine(\'micro\'); print(\'Trade data available via Python\')"',
     // Project root scripts
     'enhanced_trading_script.py',
     'enhanced_automation.py',
