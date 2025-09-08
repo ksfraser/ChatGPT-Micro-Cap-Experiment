@@ -6,8 +6,8 @@
 // Include authentication check (will redirect if not logged in)
 require_once 'auth_check.php';
 
-// Include navigation header
-require_once 'nav_header.php';
+// Include the new NavigationManager instead of nav_header.php
+require_once 'NavigationManager.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,10 +17,17 @@ require_once 'nav_header.php';
     <title>Analytics Dashboard - Enhanced Trading System</title>
     <?php require_once 'UiStyles.php'; ?>
     <?php UiStyles::render(); ?>
+    <style>
+        /* Include Navigation CSS */
+        <?php echo $navManager->getNavigationCSS(); ?>
+    </style>
 </head>
 <body>
 
-<?php renderNavigationHeader('Analytics Dashboard'); ?>
+<?php 
+// Render navigation header using NavigationManager
+$navManager->renderNavigationHeader('Analytics Dashboard', 'analytics');
+?>
 
 <div class="container">
     <?php require_once 'QuickActions.php'; ?>

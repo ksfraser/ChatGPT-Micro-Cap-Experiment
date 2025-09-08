@@ -1,31 +1,10 @@
 <?php
 /**
- * Navigation Header - Consistent navigation for all pages
+ * Navigation Header CSS - Separate CSS for inclusion in head
  */
 
-// This file should be included after auth_check.php on protected pages
-if (!isset($userAuth)) {
-    // For pages that don't require auth, create a minimal auth object for nav
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-    try {
-        require_once __DIR__ . '/UserAuthDAO.php';
-        $userAuth = new UserAuthDAO();
-    } catch (Exception $e) {
-        // If auth fails, just continue without user info
-        $userAuth = null;
-    }
-}
-
-function renderNavigationHeader($pageTitle = 'Trading System') {
-    global $userAuth, $currentUser;
-    
-    $isLoggedIn = $userAuth && $userAuth->isLoggedIn();
-    $isAdmin = $isLoggedIn && $userAuth->isAdmin();
-    $user = $isLoggedIn ? ($currentUser ?? $userAuth->getCurrentUser()) : null;
-    
-    echo '<style>
+function getNavigationCSS() {
+    return '
         .nav-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -33,7 +12,6 @@ function renderNavigationHeader($pageTitle = 'Trading System') {
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        /* Admin header styling - red gradient */
         .nav-header.admin {
             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
         }
@@ -79,7 +57,6 @@ function renderNavigationHeader($pageTitle = 'Trading System') {
             font-weight: bold;
             border: 1px solid #ffffff;
         }
-        /* Admin badge styling for red header */
         .nav-header.admin .admin-badge {
             background: #ffffff;
             color: #dc3545;
@@ -92,14 +69,23 @@ function renderNavigationHeader($pageTitle = 'Trading System') {
         @media (max-width: 768px) {
             .nav-container {
                 flex-direction: column;
-                gap: 10px;
+                gap: 15px;
+                text-align: center;
             }
             .nav-links {
                 flex-wrap: wrap;
                 justify-content: center;
             }
         }
-    </style>';
+    ';
+}
+
+function renderNavigationHTML($pageTitle = 'Trading System') {
+    global $userAuth, $currentUser;
+    
+    $isLoggedIn = $userAuth && $userAuth->isLoggedIn();
+    $isAdmin = $isLoggedIn && $userAuth->isAdmin();
+    $user = $isLoggedIn ? ($currentUser ?? $userAuth->getCurrentUser()) : null;
     
     echo '<div class="nav-header' . ($isAdmin ? ' admin' : '') . '">';
     echo '<div class="nav-container">';
@@ -107,23 +93,23 @@ function renderNavigationHeader($pageTitle = 'Trading System') {
     
     echo '<div class="nav-user">';
     
-    if ($isLoggedIn && $user) {
-        echo '<div class="user-info">';
-        echo 'Welcome, ' . htmlspecialchars($user['username']);
-        if ($isAdmin) {
-            echo ' <span class="admin-badge">ADMIN</span>';
-        }
-        echo '</div>';
-        
+    if ($isLoggedIn) {
         echo '<div class="nav-links">';
         echo '<a href="index.php">Dashboard</a>';
-        
+        echo '<a href="portfolios.php">Portfolios</a>';
+        echo '<a href="trades.php">Trades</a>';
+        echo '<a href="analytics.php">Analytics</a>';
         if ($isAdmin) {
             echo '<a href="admin_users.php">Users</a>';
             echo '<a href="system_status.php">System</a>';
         }
+        echo '</div>';
         
-        echo '<a href="logout.php">Logout</a>';
+        echo '<div class="user-info">';
+        echo '<span>👤 ' . htmlspecialchars($user['username']) . '</span>';
+        if ($isAdmin) {
+            echo '<span class="admin-badge">ADMIN</span>';
+        }
         echo '</div>';
     } else {
         echo '<div class="nav-links">';
@@ -135,5 +121,10 @@ function renderNavigationHeader($pageTitle = 'Trading System') {
     echo '</div>'; // nav-user
     echo '</div>'; // nav-container
     echo '</div>'; // nav-header
+}
+
+// Backward compatibility - keep the old function but without CSS
+function renderNavigationHeader($pageTitle = 'Trading System') {
+    renderNavigationHTML($pageTitle);
 }
 ?>

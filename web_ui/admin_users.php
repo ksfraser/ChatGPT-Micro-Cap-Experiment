@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif (isset($_POST['toggle_admin'])) {
         $userId = (int)$_POST['user_id'];
-        $isAdmin = isset($_POST['is_admin']);
+        $newAdminStatus = isset($_POST['is_admin']) ? $_POST['is_admin'] : 0;
         $currentUser = $userAuth->getCurrentUser();
         
         if ($userId === $currentUser['id']) {
@@ -66,8 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $messageType = 'error';
         } else {
             try {
-                if ($userAuth->updateUserAdminStatus($userId, $isAdmin)) {
-                    $message = 'User admin status updated successfully!';
+                if ($userAuth->updateUserAdminStatus($userId, $newAdminStatus)) {
+                    $actionText = $newAdminStatus ? 'promoted to admin' : 'changed to regular user';
+                    $message = "User {$actionText} successfully!";
                     $messageType = 'success';
                 } else {
                     $message = 'Failed to update user admin status.';
@@ -199,6 +200,15 @@ $currentUser = $userAuth->getCurrentUser();
         color: #212529;
     }
     
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #218838;
+    }
+    
     .btn-small {
         padding: 4px 8px;
         font-size: 12px;
@@ -260,21 +270,23 @@ $currentUser = $userAuth->getCurrentUser();
     }
 </style>
 
-<?php
-// Include navigation header
-require_once 'nav_header.php';
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - Enhanced Trading System</title>
+    <style>
+        <?php 
+        // Include NavigationManager for consistent navigation
+        require_once 'NavigationManager.php';
+        echo $navManager->getNavigationCSS(); 
+        ?>
+    </style>
 </head>
 <body>
 
-<?php renderNavigationHeader('User Management - Enhanced Trading System'); ?>
+<?php $navManager->renderNavigationHeader('User Management', 'users'); ?>
 
 <div class="user-management">
     <h1>👥 User Management</h1>
@@ -386,14 +398,15 @@ require_once 'nav_header.php';
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                                         <?php if (!$user['is_admin']): ?>
                                             <input type="hidden" name="is_admin" value="1">
-                                            <button type="submit" name="toggle_admin" class="btn btn-warning btn-small" 
-                                                    onclick="return confirm('Make this user an administrator?')">
-                                                Make Admin
+                                            <button type="submit" name="toggle_admin" class="btn btn-success btn-small" 
+                                                    onclick="return confirm('Promote this user to administrator?')">
+                                                ⬆️ Make Admin
                                             </button>
                                         <?php else: ?>
+                                            <input type="hidden" name="is_admin" value="0">
                                             <button type="submit" name="toggle_admin" class="btn btn-warning btn-small"
-                                                    onclick="return confirm('Remove admin privileges from this user?')">
-                                                Remove Admin
+                                                    onclick="return confirm('Remove admin privileges and make this user a regular user?')">
+                                                ⬇️ Make Regular User
                                             </button>
                                         <?php endif; ?>
                                     </form>

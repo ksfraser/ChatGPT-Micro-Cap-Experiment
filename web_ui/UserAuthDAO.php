@@ -61,8 +61,8 @@ class UserAuthDAO extends CommonDAO {
             // Hash password
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
             
-            // Insert user
-            $stmt = $this->pdo->prepare('INSERT INTO users (username, email, password_hash, is_admin) VALUES (?, ?, ?, ?)');
+            // Insert user with current timestamp
+            $stmt = $this->pdo->prepare('INSERT INTO users (username, email, password_hash, is_admin, created_at) VALUES (?, ?, ?, ?, NOW())');
             if ($stmt->execute([$username, $email, $passwordHash, $isAdmin ? 1 : 0])) {
                 $userId = $this->pdo->lastInsertId();
                 return $userId;

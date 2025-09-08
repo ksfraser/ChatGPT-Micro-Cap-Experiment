@@ -6,8 +6,8 @@
 require_once 'auth_check.php';
 requireLogin(); // Admin not required for system status viewing
 
-// Include the navigation header
-require_once 'nav_header.php';
+// Include NavigationManager for consistent navigation
+require_once 'NavigationManager.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -72,11 +72,13 @@ require_once 'nav_header.php';
         .btn:hover { background: #0056b3; }
         .btn-refresh { background: #28a745; }
         .btn-refresh:hover { background: #1e7e34; }
+    <style>
+        <?php echo $navManager->getNavigationCSS(); ?>
     </style>
 </head>
 <body>
 
-<?php renderNavigationHeader('System Status - Enhanced Trading System'); ?>
+<?php $navManager->renderNavigationHeader('System Status', 'system'); ?>
 
 <div class="container">
     <div class="header">

@@ -6,8 +6,8 @@
 // Include authentication check (will redirect if not logged in)
 require_once 'auth_check.php';
 
-// Include navigation header
-require_once 'nav_header.php';
+// Include NavigationManager for consistent navigation
+require_once 'NavigationManager.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,6 +16,8 @@ require_once 'nav_header.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio Management - Enhanced Trading System</title>
     <style>
+        <?php echo $navManager->getNavigationCSS(); ?>
+        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0; padding: 0; background: #f5f5f5; 
@@ -39,7 +41,7 @@ require_once 'nav_header.php';
 </head>
 <body>
 
-<?php renderNavigationHeader('Portfolio Management'); ?>
+<?php $navManager->renderNavigationHeader('Portfolio Management', 'portfolios'); ?>
 
 <div class="container">
     <div class="header">

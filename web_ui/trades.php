@@ -1,13 +1,13 @@
 <?php
 /**
- * Trade History - Enhanced Trading System
+ * Trade Management - Enhanced Trading System
  */
 
 // Include authentication check (will redirect if not logged in)
 require_once 'auth_check.php';
 
-// Include navigation header
-require_once 'nav_header.php';
+// Include NavigationManager for consistent navigation
+require_once 'NavigationManager.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,11 +33,14 @@ require_once 'nav_header.php';
             text-decoration: none; border-radius: 4px; margin: 5px;
         }
         .btn:hover { background: #0056b3; }
+        
+        /* Include Navigation CSS */
+        <?php echo $navManager->getNavigationCSS(); ?>
     </style>
 </head>
 <body>
 
-<?php renderNavigationHeader('Trade History'); ?>
+<?php $navManager->renderNavigationHeader('Trade History', 'trades'); ?>
 
 <div class="container">
     <div class="header">

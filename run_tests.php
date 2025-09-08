@@ -1,6 +1,7 @@
 <?php
 /**
- * Simple test runner for Ksfraser Database and Auth modules
+ * Enhanced Test Runner for Trading System
+ * Tests both legacy Ksfraser modules and new SOLID architecture components
  * This can run without PHPUnit as a basic validation tool
  */
 
@@ -23,7 +24,7 @@ class SimpleTestRunner
 
     public function runTests()
     {
-        echo "=== Ksfraser Database and Auth Module Tests ===\n\n";
+        echo "=== Enhanced Trading System Test Suite ===\n\n";
         
         foreach ($this->tests as $name => $test) {
             echo "Running: {$name}... ";
@@ -99,6 +100,20 @@ class SimpleTestRunner
     {
         if (!($object instanceof $className)) {
             throw new Exception($message ?: "Expected instance of {$className}, got " . get_class($object));
+        }
+    }
+    
+    public function assertStringContainsString($needle, $haystack, $message = '')
+    {
+        if (strpos($haystack, $needle) === false) {
+            throw new Exception($message ?: "String does not contain '{$needle}'");
+        }
+    }
+    
+    public function assertStringNotContainsString($needle, $haystack, $message = '')
+    {
+        if (strpos($haystack, $needle) !== false) {
+            throw new Exception($message ?: "String should not contain '{$needle}'");
         }
     }
 }
@@ -290,6 +305,123 @@ $runner->addTest('Auth DAO - Database Info', function() use ($runner) {
     $runner->assertNotNull($info['driver']);
     $runner->assertNotNull($info['connection_class']);
 });
+
+// SOLID Architecture Tests
+echo "\n=== Adding SOLID Architecture Tests ===\n";
+
+// Include UI Renderer components
+if (file_exists(__DIR__ . '/web_ui/UiRenderer.php')) {
+    require_once __DIR__ . '/web_ui/UiRenderer.php';
+    
+    $runner->addTest('UI - NavigationDto Creation', function() use ($runner) {
+        $navDto = new NavigationDto('Test Title', 'dashboard', ['username' => 'test'], true, [], true);
+        $runner->assertEquals('Test Title', $navDto->title);
+        $runner->assertEquals('dashboard', $navDto->currentPage);
+        $runner->assertTrue($navDto->isAdmin);
+        $runner->assertTrue($navDto->isAuthenticated);
+    });
+    
+    $runner->addTest('UI - NavigationDto Defaults', function() use ($runner) {
+        $navDto = new NavigationDto();
+        $runner->assertEquals('Enhanced Trading System', $navDto->title);
+        $runner->assertEquals('', $navDto->currentPage);
+        $runner->assertFalse($navDto->isAdmin);
+        $runner->assertFalse($navDto->isAuthenticated);
+    });
+    
+    $runner->addTest('UI - CardDto Creation', function() use ($runner) {
+        $cardDto = new CardDto('Test Card', 'Test content', 'success', '🎯');
+        $runner->assertEquals('Test Card', $cardDto->title);
+        $runner->assertEquals('Test content', $cardDto->content);
+        $runner->assertEquals('success', $cardDto->type);
+        $runner->assertEquals('🎯', $cardDto->icon);
+    });
+    
+    $runner->addTest('UI - CSS Provider Base Styles', function() use ($runner) {
+        $css = CssProvider::getBaseStyles();
+        $runner->assertStringContainsString('body {', $css);
+        $runner->assertStringContainsString('.container {', $css);
+        $runner->assertStringContainsString('.card {', $css);
+        $runner->assertStringContainsString('.btn {', $css);
+    });
+    
+    $runner->addTest('UI - CSS Provider Navigation Styles', function() use ($runner) {
+        $css = CssProvider::getNavigationStyles();
+        $runner->assertStringContainsString('.nav-header {', $css);
+        $runner->assertStringContainsString('.nav-container {', $css);
+        $runner->assertStringContainsString('.admin-badge {', $css);
+    });
+    
+    $runner->addTest('UI - Navigation Component Authenticated', function() use ($runner) {
+        $navData = new NavigationDto('Test System', 'dashboard', ['username' => 'testuser'], false, [], true);
+        $navComponent = new NavigationComponent($navData);
+        $html = $navComponent->toHtml();
+        $runner->assertStringContainsString('Test System', $html);
+        $runner->assertStringContainsString('testuser', $html);
+        $runner->assertStringContainsString('🚪 Logout', $html);
+    });
+    
+    $runner->addTest('UI - Navigation Component Admin', function() use ($runner) {
+        $navData = new NavigationDto('Admin System', 'admin', ['username' => 'admin'], true, [], true);
+        $navComponent = new NavigationComponent($navData);
+        $html = $navComponent->toHtml();
+        $runner->assertStringContainsString('nav-header admin', $html);
+        $runner->assertStringContainsString('ADMIN', $html);
+    });
+    
+    $runner->addTest('UI - Card Component Basic', function() use ($runner) {
+        $cardData = new CardDto('Test Title', 'Test content');
+        $cardComponent = new CardComponent($cardData);
+        $html = $cardComponent->toHtml();
+        $runner->assertStringContainsString('<div class="card">', $html);
+        $runner->assertStringContainsString('Test Title', $html);
+        $runner->assertStringContainsString('Test content', $html);
+    });
+    
+    $runner->addTest('UI - Card Component with Actions', function() use ($runner) {
+        $actions = [['url' => 'action.php', 'label' => 'Action', 'class' => 'btn', 'icon' => '🔧']];
+        $cardData = new CardDto('Card with Actions', 'Content', 'info', '📋', $actions);
+        $cardComponent = new CardComponent($cardData);
+        $html = $cardComponent->toHtml();
+        $runner->assertStringContainsString('<a href="action.php" class="btn">🔧 Action</a>', $html);
+    });
+    
+    $runner->addTest('UI - Page Renderer Basic', function() use ($runner) {
+        $navData = new NavigationDto('Test Page', 'test', ['username' => 'user'], false, [], true);
+        $navigation = new NavigationComponent($navData);
+        $pageRenderer = new PageRenderer('Test Page Title', $navigation, []);
+        $html = $pageRenderer->render();
+        $runner->assertStringContainsString('<!DOCTYPE html>', $html);
+        $runner->assertStringContainsString('<title>Test Page Title</title>', $html);
+        $runner->assertStringContainsString('Test Page', $html);
+        $runner->assertStringContainsString('</body></html>', $html);
+    });
+    
+    $runner->addTest('UI - UI Factory Navigation Component', function() use ($runner) {
+        $user = ['username' => 'testuser'];
+        $menuItems = [['url' => 'test.php', 'label' => 'Test', 'active' => false]];
+        $navigation = UiFactory::createNavigationComponent('Factory Test', 'dashboard', $user, true, $menuItems, true);
+        $runner->assertInstanceOf('NavigationComponent', $navigation);
+    });
+    
+    $runner->addTest('UI - UI Factory Card', function() use ($runner) {
+        $card = UiFactory::createCard('Factory Card', 'Factory content', 'success', '🎯');
+        $runner->assertInstanceOf('CardComponent', $card);
+    });
+    
+    $runner->addTest('UI - XSS Prevention', function() use ($runner) {
+        $maliciousInput = '<script>alert("XSS")</script>';
+        $navData = new NavigationDto($maliciousInput, 'test', ['username' => $maliciousInput], false, [], true);
+        $navigation = new NavigationComponent($navData);
+        $html = $navigation->toHtml();
+        $runner->assertStringNotContainsString('<script>', $html);
+        $runner->assertStringContainsString('&lt;script&gt;', $html);
+    });
+    
+    echo "Added 13 SOLID Architecture UI tests\n";
+} else {
+    echo "UiRenderer.php not found, skipping UI tests\n";
+}
 
 // Run all tests
 $runner->runTests();

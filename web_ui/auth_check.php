@@ -4,9 +4,18 @@
  * Include this at the top of pages that require authentication
  */
 
-// Start session if not already started
+// Start session if not already started and headers haven't been sent
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+    if (!headers_sent()) {
+        session_start();
+    } else {
+        // In CLI or after output, we can't start sessions
+        // This is normal for CLI testing but shouldn't happen in web context
+        if (php_sapi_name() !== 'cli') {
+            // Only throw error if this is a web request
+            trigger_error('Cannot start session - headers already sent', E_USER_WARNING);
+        }
+    }
 }
 
 try {
@@ -62,5 +71,12 @@ function getCurrentUser() {
 function isCurrentUserAdmin() {
     global $userAuth;
     return $userAuth->isAdmin();
+}
+
+// Function to explicitly require login (alias for clarity)
+function requireLogin() {
+    // Auth check already handles this automatically
+    // This function exists for explicit calls in code
+    return true;
 }
 ?>

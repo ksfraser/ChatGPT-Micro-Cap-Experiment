@@ -33,6 +33,11 @@ $user = $auth->getCurrentUser();
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
+        /* Admin header styling - red gradient */
+        .header.admin {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        
         .header-content {
             display: flex;
             justify-content: space-between;
@@ -133,11 +138,15 @@ $user = $auth->getCurrentUser();
         }
         
         .admin-badge {
-            background: #28a745;
-            color: white;
+            background: #ffffff;
+            color: #dc3545;
             padding: 0.25rem 0.5rem;
             border-radius: 12px;
             font-size: 0.75rem;
+            font-weight: bold;
+            border: 2px solid #ffffff;
+            text-shadow: none;
+        }
             font-weight: bold;
         }
         
@@ -169,7 +178,7 @@ require_once 'nav_header.php';
 renderNavigationHeader('Portfolio Dashboard - Enhanced Trading System');
 ?>
 
-    <header class="header">
+    <header class="header<?php echo $user['is_admin'] ? ' admin' : ''; ?>">
         <div class="header-content">
             <h1>💼 Portfolio Dashboard</h1>
             <div class="user-info">
