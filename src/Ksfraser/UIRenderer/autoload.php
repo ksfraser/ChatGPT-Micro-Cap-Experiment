@@ -1,12 +1,12 @@
 <?php
 
-// Ksfraser\UIRenderer Package Autoloader
-// This file provides PSR-4 autoloading for the UI Renderer package
+// Ksfraser Package Autoloader
+// This file provides PSR-4 autoloading for all Ksfraser packages
 
 spl_autoload_register(function ($class) {
     // Check if this is a class from our namespace
-    $prefix = 'Ksfraser\\UIRenderer\\';
-    $base_dir = __DIR__ . '/';
+    $prefix = 'Ksfraser\\';
+    $base_dir = dirname(__DIR__) . '/';
     
     // Does the class use the namespace prefix?
     $len = strlen($prefix);

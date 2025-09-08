@@ -14,14 +14,21 @@ use Ksfraser\UIRenderer\Factories\UiFactory;
 use Ksfraser\User\DTOs\UserManagementRequest;
 use Ksfraser\User\Services\UserManagementService;
 
+// Use the centralized CSS system
+use Ksfraser\HTML\CSS\CSSManager;
+use Ksfraser\HTML\CSS\Themes\DefaultThemeProvider;
+
 // Check if user is admin
 $userAuth = new UserAuthDAO();
 $userAuth->requireAdmin();
 
 $currentUser = $userAuth->getCurrentUser();
 
+// Register CSS providers using dependency injection
+// CSSManager::registerProvider('default', new DefaultThemeProvider());
+
 /**
- * Handle form submissions using properly namespaced Auth classes
+ * Handle form submissions using properly namespaced User classes
  */
 function handleUserManagementForms($userAuth, $currentUser) {
     $message = '';
@@ -61,182 +68,6 @@ try {
 $currentUser = $userAuth->getCurrentUser();
 ?>
 
-<style>
-    .user-management {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-    
-    .management-section {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .user-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-    }
-    
-    .user-table th,
-    .user-table td {
-        padding: 10px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-    }
-    
-    .user-table th {
-        background-color: #f8f9fa;
-        font-weight: bold;
-    }
-    
-    .user-table tr:hover {
-        background-color: #f5f5f5;
-    }
-    
-    .admin-badge {
-        background: #dc3545;
-        color: white;
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-size: 12px;
-    }
-    
-    .status-active {
-        color: #28a745;
-        font-weight: bold;
-    }
-    
-    .status-inactive {
-        color: #dc3545;
-        font-weight: bold;
-    }
-    
-    .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .form-group {
-        margin-bottom: 15px;
-    }
-    
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-    
-    .form-group input,
-    .form-group select {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-    }
-    
-    .btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        margin-right: 5px;
-    }
-    
-    .btn-primary {
-        background: #007cba;
-        color: white;
-    }
-    
-    .btn-danger {
-        background: #dc3545;
-        color: white;
-    }
-    
-    .btn-warning {
-        background: #ffc107;
-        color: #212529;
-    }
-    
-    .btn-success {
-        background: #28a745;
-        color: white;
-    }
-    
-    .btn-success:hover {
-        background: #218838;
-    }
-    
-    .btn-small {
-        padding: 4px 8px;
-        font-size: 12px;
-    }
-    
-    .alert {
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-    }
-    
-    .alert-success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    
-    .alert-error {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .stat-card {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 6px;
-        text-align: center;
-    }
-    
-    .stat-number {
-        font-size: 24px;
-        font-weight: bold;
-        color: #007cba;
-    }
-    
-    .stat-label {
-        color: #666;
-        font-size: 14px;
-    }
-    
-    /* Navigation compatibility */
-    body {
-        margin: 0;
-        padding: 0;
-    }
-    
-    .user-management {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-</style>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -249,14 +80,42 @@ $currentUser = $userAuth->getCurrentUser();
         require_once 'NavigationManager.php';
         $navManager = new NavigationManager();
         echo $navManager->getNavigationCSS(); 
+        
+        // Add basic CSS for user management
+        echo CSSManager::getBaseCSS();
+        echo CSSManager::getFormCSS();
+        echo CSSManager::getTableCSS();
+        echo CSSManager::getCardCSS();
+        echo CSSManager::getUtilityCSS();
         ?>
     </style>
 </head>
 <body>
 
-<?php $navManager->renderNavigationHeader('User Management', 'users'); ?>
+<?php 
+// Render navigation with MenuService integration
+require_once 'NavigationManager.php';
+$navManager = new NavigationManager();
+$navManager->renderNavigationHeader('User Management', 'users');
 
-<div class="user-management">
+// Add admin menu items for quick access
+$isAdminUser = $userAuth->isAdmin();
+$menuItems = MenuService::getMenuItems('users', $isAdminUser, true);
+
+// Display quick access links for admin users
+if ($isAdminUser && !empty($menuItems)) {
+    echo '<div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px;">';
+    echo '<strong>Quick Access:</strong> ';
+    foreach ($menuItems as $item) {
+        if (isset($item['admin_only']) && $item['admin_only'] && !$item['active']) {
+            echo '<a href="' . htmlspecialchars($item['url']) . '" style="margin-right: 10px; color: #007cba; text-decoration: none;">' . htmlspecialchars($item['label']) . '</a>';
+        }
+    }
+    echo '</div>';
+}
+?>
+
+<div class="container">
     <h1>👥 User Management</h1>
     
     <?php if ($message): ?>
