@@ -8,7 +8,6 @@
 require_once 'auth_check.php';
 require_once 'UiRenderer.php';
 require_once 'RefactoredTradeLogDAO.php';
-require_once 'MenuService.php';
 
 /**
  * Trade Content Service - Handles business logic for trade history display

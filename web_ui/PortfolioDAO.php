@@ -5,17 +5,22 @@
  */
 
 require_once __DIR__ . '/CommonDAO.php';
+require_once __DIR__ . '/SessionManager.php';
+
 class PortfolioDAO extends CommonDAO {
     private $csvPath;
     private $sessionKey;
     private $tableName;
+    private $sessionManager;
 
     public function __construct($csvPath, $tableName, $dbConfigClass) {
         parent::__construct($dbConfigClass);
         $this->csvPath = $csvPath;
         $this->tableName = $tableName;
         $this->sessionKey = 'portfolio_retry_' . $tableName;
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        
+        // Use centralized SessionManager instead of direct session_start()
+        $this->sessionManager = SessionManager::getInstance();
     }
 
     public function readPortfolio() {
@@ -37,9 +42,9 @@ class PortfolioDAO extends CommonDAO {
         $csvOk = $this->writePortfolioCsv($rows);
         $dbOk = $this->writePortfolioDb($rows);
         if (!$csvOk || !$dbOk) {
-            $_SESSION[$this->sessionKey] = $rows;
+            $this->sessionManager->setRetryData($this->sessionKey, $rows);
         } else {
-            unset($_SESSION[$this->sessionKey]);
+            $this->sessionManager->clearRetryData($this->sessionKey);
         }
         return $csvOk && $dbOk;
     }
@@ -87,9 +92,10 @@ class PortfolioDAO extends CommonDAO {
         $this->errors[] = $msg;
     }
     public function getRetryData() {
-        return $_SESSION[$this->sessionKey] ?? null;
+        return $this->sessionManager->getRetryData($this->sessionKey);
     }
+    
     public function clearRetryData() {
-        unset($_SESSION[$this->sessionKey]);
+        $this->sessionManager->clearRetryData($this->sessionKey);
     }
 }

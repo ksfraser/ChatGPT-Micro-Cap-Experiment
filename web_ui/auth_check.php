@@ -4,17 +4,17 @@
  * Include this at the top of pages that require authentication
  */
 
-// Start session if not already started and headers haven't been sent
-if (session_status() === PHP_SESSION_NONE) {
-    if (!headers_sent()) {
-        session_start();
-    } else {
-        // In CLI or after output, we can't start sessions
-        // This is normal for CLI testing but shouldn't happen in web context
-        if (php_sapi_name() !== 'cli') {
-            // Only throw error if this is a web request
-            trigger_error('Cannot start session - headers already sent', E_USER_WARNING);
-        }
+// Use centralized SessionManager
+require_once __DIR__ . '/SessionManager.php';
+
+// Initialize session through SessionManager (handles headers safely)
+$sessionManager = SessionManager::getInstance();
+
+// Log any session initialization issues
+if (!$sessionManager->isSessionActive()) {
+    $error = $sessionManager->getInitializationError();
+    if ($error && php_sapi_name() !== 'cli') {
+        error_log('Auth Check: ' . $error);
     }
 }
 
@@ -39,6 +39,8 @@ try {
     
     // Make user data available to the page
     $currentUser = $userAuth->getCurrentUser();
+    $user = $currentUser; // For backward compatibility
+    $isAdmin = $userAuth->isAdmin();
     
 } catch (Exception $e) {
     // If there's an authentication error, log it and redirect to login

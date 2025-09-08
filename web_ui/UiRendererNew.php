@@ -71,15 +71,52 @@ class UiFactory {
     public static function createDataCard($title, $data, $headers = [], $tableOptions = []) {
         return NamespacedUiFactory::createDataCard($title, $data, $headers, $tableOptions);
     }
-    
-    // Additional aliases for methods used in index.php
-    public static function createCard($title, $content, $type = 'default', $icon = '', $actions = []) {
-        return NamespacedUiFactory::createCard($title, $content, $type, $icon, $actions);
-    }
-    
-    public static function createNavigation($title, $currentPage, $user, $isAdmin, $menuItems, $isAuthenticated = false) {
-        return NamespacedUiFactory::createNavigation($title, $currentPage, $user, $isAdmin, $menuItems, $isAuthenticated);
-    }
 }
 
-// MenuService class removed - now using standalone MenuService.php file
+/**
+ * Menu Service for providing menu items
+ */
+class MenuService {
+    public static function getMenuItems($currentPage = '', $isAdmin = false, $isAuthenticated = false) {
+        $items = [
+            [
+                'label' => 'Dashboard',
+                'url' => 'index.php',
+                'page' => 'dashboard'
+            ],
+            [
+                'label' => 'Portfolios',
+                'url' => 'portfolios.php',
+                'page' => 'portfolios'
+            ],
+            [
+                'label' => 'Trade History',
+                'url' => 'trades.php',
+                'page' => 'trades'
+            ]
+        ];
+        
+        if ($isAuthenticated) {
+            $items[] = [
+                'label' => 'Analytics',
+                'url' => 'analytics.php',
+                'page' => 'analytics'
+            ];
+        }
+        
+        if ($isAdmin) {
+            $items[] = [
+                'label' => 'Admin',
+                'url' => 'admin.php',
+                'page' => 'admin'
+            ];
+            $items[] = [
+                'label' => 'Database',
+                'url' => 'database.php',
+                'page' => 'database'
+            ];
+        }
+        
+        return $items;
+    }
+}

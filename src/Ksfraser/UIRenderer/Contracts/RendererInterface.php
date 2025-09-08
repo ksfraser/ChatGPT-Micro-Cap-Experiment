@@ -9,10 +9,3 @@ namespace Ksfraser\UIRenderer\Contracts;
 interface RendererInterface {
     public function render();
 }
-
-/**
- * Component Interface - For reusable UI components
- */
-interface ComponentInterface {
-    public function toHtml();
-}

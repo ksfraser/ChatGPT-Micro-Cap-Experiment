@@ -6,12 +6,8 @@
 
 // Include authentication and UI system
 require_once 'auth_check.php';
-require_once __DIR__ . '/../src/Ksfraser/UIRenderer/autoload.php';
+require_once 'UiRenderer.php';
 require_once 'RefactoredPortfolioDAO.php';
-require_once 'MenuService.php';
-
-// Use the namespaced UI Factory
-use Ksfraser\UIRenderer\Factories\UiFactory;
 
 /**
  * Portfolio Content Service - Handles business logic for portfolio display
@@ -74,40 +70,15 @@ class PortfolioContentService {
         $content .= '<p><strong>Purpose:</strong> CSV-mirrored original data</p>';
         $content .= '<p><strong>Data Directory:</strong> data_micro_cap/</p>';
         
-        // Add filter controls for micro cap
-        $content .= '<div style="margin: 15px 0; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">';
-        $content .= '<h5>📊 Portfolio Filters & Options</h5>';
-        $content .= '<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">';
-        $content .= '<label><input type="checkbox" id="filter-recent" checked> Show Recent Only</label>';
-        $content .= '<label><input type="checkbox" id="filter-profitable"> Profitable Only</label>';
-        $content .= '<label><input type="checkbox" id="filter-large-positions"> Large Positions (>$1000)</label>';
-        $content .= '<select id="sort-by" style="padding: 5px; margin-left: 10px;">';
-        $content .= '<option value="date">Sort by Date</option>';
-        $content .= '<option value="value">Sort by Value</option>';
-        $content .= '<option value="symbol">Sort by Symbol</option>';
-        $content .= '</select>';
-        $content .= '<button onclick="applyFilters()" class="btn btn-sm" style="margin-left: 10px;">Apply Filters</button>';
-        $content .= '</div></div>';
-        
         if ($portfolioRows && count($portfolioRows)) {
-            $content .= '<div id="portfolio-table-container">';
-            $tableComponent = UiFactory::createTable($portfolioRows, [], [
+            $tableComponent = UiFactory::createTableComponent($portfolioRows, [], [
                 'striped' => true,
                 'hover' => true,
-                'responsive' => true,
-                'id' => 'micro-cap-table'
+                'responsive' => true
             ]);
             $content .= $tableComponent->toHtml();
-            $content .= '</div>';
         } else {
             $content .= '<em>No recent micro-cap portfolio data found.</em>';
-            
-            // Try database fallback
-            $content .= '<div style="margin-top: 15px; padding: 10px; background-color: #fff3cd; border-left: 4px solid #ffc107;">';
-            $content .= '<strong>📋 CSV Data Status:</strong> No CSV files found<br>';
-            $content .= '<strong>🔄 Fallback Option:</strong> Attempting database connection...<br>';
-            $content .= '<button onclick="tryDatabaseFallback(\'micro-cap\')" class="btn btn-warning btn-sm">Try Database</button>';
-            $content .= '</div>';
         }
         
         if ($errors && count($errors)) {
@@ -166,25 +137,14 @@ class PortfolioContentService {
         $content .= '<p><strong>Data Directory:</strong> data_blue-chip_cap/</p>';
         
         if ($portfolioRows && count($portfolioRows)) {
-            $tableComponent = UiFactory::createTable($portfolioRows, [], [
+            $tableComponent = UiFactory::createTableComponent($portfolioRows, [], [
                 'striped' => true,
                 'hover' => true,
                 'responsive' => true
             ]);
             $content .= $tableComponent->toHtml();
         } else {
-            $content .= '<div style="color:#856404;background-color:#fff3cd;border:1px solid #ffeaa7;padding:10px;border-radius:5px;margin:10px 0;">';
-            $content .= '<strong>📁 CSV Files Not Found</strong><br>';
-            $content .= 'Checked locations:<br>';
-            foreach ($csvPaths as $path) {
-                $exists = file_exists($path) ? '✅' : '❌';
-                $content .= "• {$exists} " . htmlspecialchars($path) . "<br>";
-            }
-            $content .= '<br><strong>🔄 Available Options:</strong><br>';
-            $content .= '• <button onclick="tryDatabaseFallback(\'blue-chip\')" class="btn btn-info btn-sm">Try Database Connection</button><br>';
-            $content .= '• <a href="debug_500.php" class="btn btn-warning btn-sm">Run System Diagnostics</a><br>';
-            $content .= '• <em>System will attempt to connect to stock_market_2 database</em>';
-            $content .= '</div>';
+            $content .= '<em>No blue-chip portfolio data found.</em>';
         }
         
         if ($errors && count($errors)) {
@@ -236,25 +196,14 @@ class PortfolioContentService {
         $content .= '<p><strong>Data Directory:</strong> data_small_cap/</p>';
         
         if ($portfolioRows && count($portfolioRows)) {
-            $tableComponent = UiFactory::createTable($portfolioRows, [], [
+            $tableComponent = UiFactory::createTableComponent($portfolioRows, [], [
                 'striped' => true,
                 'hover' => true,
                 'responsive' => true
             ]);
             $content .= $tableComponent->toHtml();
         } else {
-            $content .= '<div style="color:#856404;background-color:#fff3cd;border:1px solid #ffeaa7;padding:10px;border-radius:5px;margin:10px 0;">';
-            $content .= '<strong>📁 CSV Files Not Found</strong><br>';
-            $content .= 'Checked locations:<br>';
-            foreach ($csvPaths as $path) {
-                $exists = file_exists($path) ? '✅' : '❌';
-                $content .= "• {$exists} " . htmlspecialchars($path) . "<br>";
-            }
-            $content .= '<br><strong>🔄 Available Options:</strong><br>';
-            $content .= '• <button onclick="tryDatabaseFallback(\'small-cap\')" class="btn btn-info btn-sm">Try Database Connection</button><br>';
-            $content .= '• <a href="debug_500.php" class="btn btn-warning btn-sm">Run System Diagnostics</a><br>';
-            $content .= '• <em>System will attempt to connect to stock_market_2 database</em>';
-            $content .= '</div>';
+            $content .= '<em>No small-cap portfolio data found.</em>';
         }
         
         if ($errors && count($errors)) {
@@ -321,7 +270,7 @@ class PortfolioContentService {
             ['label' => 'Database Manager', 'url' => 'database.php', 'class' => 'btn-secondary']
         ];
         
-        return UiFactory::createCard('Quick Actions', '', 'default', '', $actions);
+        return UiFactory::createCardComponent('Quick Actions', '', 'default', '', $actions);
     }
 }
 
@@ -346,7 +295,7 @@ class PortfolioController {
         $isAuthenticated = isset($user) && !empty($user);
         $menuItems = MenuService::getMenuItems('portfolios', $isAdmin ?? false, $isAuthenticated);
         
-        $navigation = UiFactory::createNavigation(
+        $navigation = UiFactory::createNavigationComponent(
             'Enhanced Trading System - Portfolios',
             'portfolios',
             $user ?? ['username' => 'Guest'],
@@ -400,92 +349,9 @@ class PortfolioController {
             };
             xhr.send("command_key=" + encodeURIComponent(cmdKey));
         }
-        
-        function applyFilters() {
-            const table = document.getElementById("micro-cap-table");
-            if (!table) return;
-            
-            const showRecent = document.getElementById("filter-recent").checked;
-            const showProfitable = document.getElementById("filter-profitable").checked;
-            const showLarge = document.getElementById("filter-large-positions").checked;
-            const sortBy = document.getElementById("sort-by").value;
-            
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-            
-            rows.forEach(row => {
-                let show = true;
-                
-                if (showProfitable) {
-                    // Look for profit/loss indicators in the row
-                    const cells = row.querySelectorAll("td");
-                    let isProfitable = false;
-                    cells.forEach(cell => {
-                        if (cell.textContent.includes("+") || cell.textContent.includes("profit")) {
-                            isProfitable = true;
-                        }
-                    });
-                    if (!isProfitable) show = false;
-                }
-                
-                if (showLarge) {
-                    // Look for large monetary values
-                    const cells = row.querySelectorAll("td");
-                    let hasLargePosition = false;
-                    cells.forEach(cell => {
-                        const value = parseFloat(cell.textContent.replace(/[^0-9.-]/g, ""));
-                        if (value > 1000) hasLargePosition = true;
-                    });
-                    if (!hasLargePosition) show = false;
-                }
-                
-                row.style.display = show ? "" : "none";
-            });
-        }
-        
-        function tryDatabaseFallback(portfolioType) {
-            const btn = event.target;
-            btn.disabled = true;
-            btn.textContent = "🔄 Connecting...";
-            
-            fetch("portfolio_rest_api.php", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    action: "get_portfolio",
-                    type: portfolioType
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.data.length > 0) {
-                    btn.textContent = "✅ Found " + data.data.length + " records";
-                    btn.classList.remove("btn-info");
-                    btn.classList.add("btn-success");
-                    
-                    // Reload page to show database data
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    btn.textContent = "❌ No database data";
-                    btn.classList.remove("btn-info");
-                    btn.classList.add("btn-warning");
-                }
-            })
-            .catch(error => {
-                btn.textContent = "❌ Connection failed";
-                btn.classList.remove("btn-info");
-                btn.classList.add("btn-danger");
-            })
-            .finally(() => {
-                setTimeout(() => {
-                    btn.disabled = false;
-                }, 2000);
-            });
-        }
         ';
         
-        $pageRenderer = UiFactory::createPage(
+        $pageRenderer = UiFactory::createPageRenderer(
             'Portfolio Management - Enhanced Trading System',
             $navigation,
             $components,
@@ -502,7 +368,7 @@ try {
     echo $controller->renderPage();
 } catch (Exception $e) {
     // Use UiRenderer for error pages
-    $errorNavigation = UiFactory::createNavigation(
+    $errorNavigation = UiFactory::createNavigationComponent(
         'Error - Portfolio Management',
         'error',
         ['username' => 'Guest'],
@@ -523,7 +389,7 @@ try {
         '</div>'
     );
     
-    $pageRenderer = UiFactory::createPage(
+    $pageRenderer = UiFactory::createPageRenderer(
         'Error - Portfolio Management',
         $errorNavigation,
         [$errorCard]

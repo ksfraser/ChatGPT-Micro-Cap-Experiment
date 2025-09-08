@@ -5,10 +5,45 @@
  */
 class SessionManager {
     private static $instance = null;
+    private static $sessionStarted = false;
+    private static $initializationError = null;
     
     private function __construct() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+        $this->initializeSession();
+    }
+    
+    /**
+     * Initialize session safely with header checking
+     */
+    private function initializeSession() {
+        try {
+            if (session_status() === PHP_SESSION_NONE) {
+                if (!headers_sent($file, $line)) {
+                    session_start();
+                    self::$sessionStarted = true;
+                } else {
+                    // Headers already sent - log but don't fail
+                    $error = "Cannot start session - headers already sent in file $file on line $line";
+                    self::$initializationError = $error;
+                    
+                    // Only log error in web context, not CLI
+                    if (php_sapi_name() !== 'cli') {
+                        error_log('SessionManager: ' . $error);
+                    }
+                    
+                    self::$sessionStarted = false;
+                }
+            } else {
+                // Session already started elsewhere
+                self::$sessionStarted = true;
+            }
+        } catch (Exception $e) {
+            self::$initializationError = 'Session initialization failed: ' . $e->getMessage();
+            self::$sessionStarted = false;
+            
+            if (php_sapi_name() !== 'cli') {
+                error_log('SessionManager: ' . self::$initializationError);
+            }
         }
     }
     
@@ -20,16 +55,40 @@ class SessionManager {
     }
     
     /**
+     * Check if session is properly initialized
+     */
+    public function isSessionActive() {
+        return self::$sessionStarted && session_status() === PHP_SESSION_ACTIVE;
+    }
+    
+    /**
+     * Get initialization error if any
+     */
+    public function getInitializationError() {
+        return self::$initializationError;
+    }
+    
+    /**
+     * Check if we can use session safely
+     */
+    private function canUseSession() {
+        return $this->isSessionActive();
+    }
+    
+    /**
      * Store retry data for failed operations
      */
     public function setRetryData($key, $data) {
+        if (!$this->canUseSession()) return false;
         $_SESSION['retry_data'][$key] = $data;
+        return true;
     }
     
     /**
      * Get retry data for failed operations
      */
     public function getRetryData($key) {
+        if (!$this->canUseSession()) return null;
         return $_SESSION['retry_data'][$key] ?? null;
     }
     
@@ -37,20 +96,25 @@ class SessionManager {
      * Clear retry data after successful retry
      */
     public function clearRetryData($key) {
+        if (!$this->canUseSession()) return false;
         unset($_SESSION['retry_data'][$key]);
+        return true;
     }
     
     /**
      * Store errors in session for display across requests
      */
     public function addError($component, $error) {
+        if (!$this->canUseSession()) return false;
         $_SESSION['errors'][$component][] = $error;
+        return true;
     }
     
     /**
      * Get errors for a component
      */
     public function getErrors($component) {
+        if (!$this->canUseSession()) return [];
         return $_SESSION['errors'][$component] ?? [];
     }
     
@@ -58,13 +122,16 @@ class SessionManager {
      * Clear errors for a component
      */
     public function clearErrors($component) {
+        if (!$this->canUseSession()) return false;
         unset($_SESSION['errors'][$component]);
+        return true;
     }
     
     /**
      * Get all errors
      */
     public function getAllErrors() {
+        if (!$this->canUseSession()) return [];
         return $_SESSION['errors'] ?? [];
     }
     
@@ -72,20 +139,25 @@ class SessionManager {
      * Clear all errors
      */
     public function clearAllErrors() {
+        if (!$this->canUseSession()) return false;
         unset($_SESSION['errors']);
+        return true;
     }
     
     /**
      * Store arbitrary session data
      */
     public function set($key, $value) {
+        if (!$this->canUseSession()) return false;
         $_SESSION[$key] = $value;
+        return true;
     }
     
     /**
      * Get arbitrary session data
      */
     public function get($key, $default = null) {
+        if (!$this->canUseSession()) return $default;
         return $_SESSION[$key] ?? $default;
     }
     
@@ -93,6 +165,7 @@ class SessionManager {
      * Check if session key exists
      */
     public function has($key) {
+        if (!$this->canUseSession()) return false;
         return isset($_SESSION[$key]);
     }
     
@@ -100,14 +173,19 @@ class SessionManager {
      * Remove session key
      */
     public function remove($key) {
+        if (!$this->canUseSession()) return false;
         unset($_SESSION[$key]);
+        return true;
     }
     
     /**
      * Destroy entire session
      */
     public function destroy() {
-        session_destroy();
+        if ($this->canUseSession()) {
+            session_destroy();
+        }
         self::$instance = null;
+        self::$sessionStarted = false;
     }
 }

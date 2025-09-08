@@ -1,6 +1,26 @@
 <?php
 /**
- * TradeLogDAO: Handles trade log data for any type (micro, blue-chip, etc.) with DB-first read, CSV fallback, and dual-write.
+ * TradeLogDAO: Handles trade log data with DB-first read, CSV fallback, and dual-write.
+ */
+
+require_once __DIR__ . '/CommonDAO.php';
+require_once __DIR__ . '/SessionManager.php';
+
+class TradeLogDAO extends CommonDAO {
+    private $csvPath;
+    private $sessionKey;
+    private $tableName;
+    private $sessionManager;
+
+    public function __construct($csvPath, $tableName = 'trade_log', $dbConfigClass = 'LegacyDatabaseConfig') {
+        parent::__construct($dbConfigClass);
+        $this->csvPath = $csvPath;
+        $this->tableName = $tableName;
+        $this->sessionKey = 'tradelog_retry_' . $tableName;
+        
+        // Use centralized SessionManager instead of direct session_start()
+        $this->sessionManager = SessionManager::getInstance();
+    }eLogDAO: Handles trade log data for any type (micro, blue-chip, etc.) with DB-first read, CSV fallback, and dual-write.
  * On write: writes CSV first, then DB. On read: tries DB, falls back to CSV. Logs errors and stores failed data in session for retry.
  */
 

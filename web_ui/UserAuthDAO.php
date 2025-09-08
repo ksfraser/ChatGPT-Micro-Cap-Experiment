@@ -12,16 +12,26 @@
  */
 
 require_once __DIR__ . '/CommonDAO.php';
+require_once __DIR__ . '/SessionManager.php';
 
 class UserAuthDAO extends CommonDAO {
     
     private $sessionKey = 'user_auth';
     private $csrfKey = 'csrf_token';
+    private $sessionManager;
     
     public function __construct() {
         parent::__construct('LegacyDatabaseConfig');
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+        
+        // Use centralized SessionManager instead of direct session_start()
+        $this->sessionManager = SessionManager::getInstance();
+        
+        // Log session initialization issues if any
+        if (!$this->sessionManager->isSessionActive()) {
+            $error = $this->sessionManager->getInitializationError();
+            if ($error) {
+                $this->logError("Session initialization issue: " . $error);
+            }
         }
     }
     
@@ -104,13 +114,15 @@ class UserAuthDAO extends CommonDAO {
             }
             
             // Set session
-            $_SESSION[$this->sessionKey] = [
+            $sessionData = [
                 'id' => $user['id'],
                 'username' => $user['username'],
                 'email' => $user['email'],
                 'is_admin' => (bool)$user['is_admin'],
                 'login_time' => time()
             ];
+            
+            $this->sessionManager->set($this->sessionKey, $sessionData);
             
             // Generate CSRF token
             $this->generateCSRFToken();
@@ -127,8 +139,9 @@ class UserAuthDAO extends CommonDAO {
      * Logout user
      */
     public function logoutUser() {
-        unset($_SESSION[$this->sessionKey]);
-        unset($_SESSION[$this->csrfKey]);
+        $this->sessionManager->remove($this->sessionKey);
+        $this->sessionManager->remove($this->csrfKey);
+        
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', time() - 42000,
@@ -136,7 +149,8 @@ class UserAuthDAO extends CommonDAO {
                 $params["secure"], $params["httponly"]
             );
         }
-        session_destroy();
+        
+        $this->sessionManager->destroy();
         return true;
     }
     
@@ -144,7 +158,8 @@ class UserAuthDAO extends CommonDAO {
      * Check if user is logged in
      */
     public function isLoggedIn() {
-        return isset($_SESSION[$this->sessionKey]) && !empty($_SESSION[$this->sessionKey]['id']);
+        $userData = $this->sessionManager->get($this->sessionKey);
+        return $userData && !empty($userData['id']);
     }
     
     /**
@@ -152,7 +167,7 @@ class UserAuthDAO extends CommonDAO {
      */
     public function getCurrentUser() {
         if ($this->isLoggedIn()) {
-            return $_SESSION[$this->sessionKey];
+            return $this->sessionManager->get($this->sessionKey);
         }
         return null;
     }
@@ -197,17 +212,21 @@ class UserAuthDAO extends CommonDAO {
      * Generate CSRF token
      */
     public function generateCSRFToken() {
-        if (empty($_SESSION[$this->csrfKey])) {
-            $_SESSION[$this->csrfKey] = bin2hex(random_bytes(32));
+        $existingToken = $this->sessionManager->get($this->csrfKey);
+        if (empty($existingToken)) {
+            $token = bin2hex(random_bytes(32));
+            $this->sessionManager->set($this->csrfKey, $token);
+            return $token;
         }
-        return $_SESSION[$this->csrfKey];
+        return $existingToken;
     }
     
     /**
      * Validate CSRF token
      */
     public function validateCSRFToken($token) {
-        return isset($_SESSION[$this->csrfKey]) && hash_equals($_SESSION[$this->csrfKey], $token);
+        $sessionToken = $this->sessionManager->get($this->csrfKey);
+        return $sessionToken && hash_equals($sessionToken, $token);
     }
     
     /**
@@ -280,7 +299,11 @@ class UserAuthDAO extends CommonDAO {
             if ($stmt->execute([$email, $userId])) {
                 // Update session if it's the current user
                 if ($this->getCurrentUserId() == $userId) {
-                    $_SESSION[$this->sessionKey]['email'] = $email;
+                    $userData = $this->sessionManager->get($this->sessionKey);
+                    if ($userData) {
+                        $userData['email'] = $email;
+                        $this->sessionManager->set($this->sessionKey, $userData);
+                    }
                 }
                 return true;
             }

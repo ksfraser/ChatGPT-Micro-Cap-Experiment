@@ -9,8 +9,14 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Include the UI rendering system
-require_once 'UiRenderer.php';
+// Include the UI rendering system - use namespace version directly
+require_once __DIR__ . '/../src/Ksfraser/UIRenderer/autoload.php';
+require_once 'SessionManager.php';
+require_once 'MenuService.php';
+
+// Use the namespaced UI Factory
+use Ksfraser\UIRenderer\Factories\UiFactory;
+use Ksfraser\UIRenderer\Contracts\ComponentInterface;
 
 /**
  * Compatible Authentication Service using existing working auth system
@@ -22,6 +28,7 @@ class CompatibleAuthenticationService {
     private $authError = false;
     private $errorMessage = '';
     private $userAuth = null;
+    private $sessionManager = null;
     
     public function __construct() {
         $this->initializeAuthentication();
@@ -29,32 +36,33 @@ class CompatibleAuthenticationService {
     
     private function initializeAuthentication() {
         try {
-            // Use the same authentication method that works for admin dashboard
-            if (!headers_sent()) {
-                // Start session like auth_check.php does
-                if (session_status() === PHP_SESSION_NONE) {
-                    session_start();
+            // Use centralized SessionManager instead of manual session handling
+            $this->sessionManager = SessionManager::getInstance();
+            
+            // Check if session is properly initialized
+            if (!$this->sessionManager->isSessionActive()) {
+                $error = $this->sessionManager->getInitializationError();
+                if ($error) {
+                    throw new Exception('Session initialization failed: ' . $error);
                 }
-                
-                // Use the existing UserAuthDAO that works with F30 Apache
-                require_once __DIR__ . '/UserAuthDAO.php';
-                $this->userAuth = new UserAuthDAO();
-                
-                // Check authentication status
-                if ($this->userAuth->isLoggedIn()) {
-                    $this->isAuthenticated = true;
-                    $this->currentUser = $this->userAuth->getCurrentUser();
-                    $this->isAdmin = $this->userAuth->isAdmin();
-                } else {
-                    // Not logged in, but don't redirect - just show guest mode
-                    $this->isAuthenticated = false;
-                    $this->currentUser = ['username' => 'Guest'];
-                    $this->isAdmin = false;
-                }
-                
-            } else {
-                throw new Exception('Headers already sent - cannot initialize session');
             }
+            
+            // Use the existing UserAuthDAO that works with F30 Apache
+            require_once __DIR__ . '/UserAuthDAO.php';
+            $this->userAuth = new UserAuthDAO();
+            
+            // Check authentication status
+            if ($this->userAuth->isLoggedIn()) {
+                $this->isAuthenticated = true;
+                $this->currentUser = $this->userAuth->getCurrentUser();
+                $this->isAdmin = $this->userAuth->isAdmin();
+            } else {
+                // Not logged in, but don't redirect - just show guest mode
+                $this->isAuthenticated = false;
+                $this->currentUser = ['username' => 'Guest'];
+                $this->isAdmin = false;
+            }
+            
         } catch (Exception $e) {
             $this->handleAuthFailure($e);
         } catch (Error $e) {
@@ -96,66 +104,6 @@ class CompatibleAuthenticationService {
     
     public function getUserAuth() {
         return $this->userAuth;
-    }
-}
-
-/**
- * Menu Service - Single Responsibility for menu generation
- */
-class MenuService {
-    public static function getMenuItems($currentPage, $isAdmin, $isAuthenticated) {
-        $items = [];
-        
-        if ($isAuthenticated) {
-            $items[] = [
-                'url' => 'index.php',
-                'label' => '🏠 Dashboard',
-                'active' => $currentPage === 'dashboard'
-            ];
-            
-            $items[] = [
-                'url' => 'portfolios.php',
-                'label' => '📈 Portfolios',
-                'active' => $currentPage === 'portfolios'
-            ];
-            
-            $items[] = [
-                'url' => 'trades.php',
-                'label' => '📋 Trades',
-                'active' => $currentPage === 'trades'
-            ];
-            
-            $items[] = [
-                'url' => 'analytics.php',
-                'label' => '📊 Analytics',
-                'active' => $currentPage === 'analytics'
-            ];
-            
-            if ($isAdmin) {
-                $items[] = [
-                    'url' => 'admin_users.php',
-                    'label' => '👥 Users',
-                    'active' => $currentPage === 'users',
-                    'admin_only' => true
-                ];
-                
-                $items[] = [
-                    'url' => 'system_status.php',
-                    'label' => '⚙️ System',
-                    'active' => $currentPage === 'system',
-                    'admin_only' => true
-                ];
-                
-                $items[] = [
-                    'url' => 'database.php',
-                    'label' => '🗄️ Database',
-                    'active' => $currentPage === 'database',
-                    'admin_only' => true
-                ];
-            }
-        }
-        
-        return $items;
     }
 }
 
@@ -295,7 +243,7 @@ class DashboardController {
             ? 'Enhanced Trading System Dashboard (Auth Error)'
             : 'Enhanced Trading System Dashboard';
         
-        $navigation = UiFactory::createNavigationComponent(
+        $navigation = UiFactory::createNavigation(
             $title,
             'dashboard',
             $user,
@@ -306,7 +254,7 @@ class DashboardController {
         
         $components = $this->contentService->createDashboardComponents();
         
-        $pageRenderer = UiFactory::createPageRenderer(
+        $pageRenderer = UiFactory::createPage(
             'Dashboard - Enhanced Trading System',
             $navigation,
             $components
@@ -322,7 +270,7 @@ try {
     echo $controller->renderPage();
 } catch (Exception $e) {
     // Use UiRenderer for error pages instead of raw echo
-    $errorNavigation = UiFactory::createNavigationComponent(
+    $errorNavigation = UiFactory::createNavigation(
         'System Error',
         'error',
         ['username' => 'Guest'],
@@ -331,9 +279,8 @@ try {
         false
     );
     
-    $errorCard = UiFactory::createCardComponent(
+    $errorCard = UiFactory::createCard(
         'System Error',
-        'error',
         '<p>The system encountered an error. Please try again later.</p>' .
         '<div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-left: 4px solid #dc3545;">' .
         '<strong>Error Details:</strong><br>' .
@@ -343,10 +290,11 @@ try {
         '</div>' .
         '<div style="margin-top: 20px;">' .
         '<a href="index.php" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Try Again</a>' .
-        '</div>'
+        '</div>',
+        'error'
     );
     
-    $pageRenderer = UiFactory::createPageRenderer(
+    $pageRenderer = UiFactory::createPage(
         'System Error - Enhanced Trading System',
         $errorNavigation,
         [$errorCard]
@@ -355,7 +303,7 @@ try {
     echo $pageRenderer->render();
 } catch (Error $e) {
     // Use UiRenderer for fatal error pages
-    $errorNavigation = UiFactory::createNavigationComponent(
+    $errorNavigation = UiFactory::createNavigation(
         'Fatal Error',
         'fatal_error',
         ['username' => 'Guest'],
@@ -364,9 +312,8 @@ try {
         false
     );
     
-    $fatalErrorCard = UiFactory::createCardComponent(
+    $fatalErrorCard = UiFactory::createCard(
         'Fatal System Error',
-        'fatal',
         '<p>The system encountered a fatal error. Please contact support.</p>' .
         '<div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107;">' .
         '<strong>Fatal Error Details:</strong><br>' .
@@ -376,10 +323,11 @@ try {
         '</div>' .
         '<div style="margin-top: 20px;">' .
         '<a href="index.php" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Reload Page</a>' .
-        '</div>'
+        '</div>',
+        'error'
     );
     
-    $pageRenderer = UiFactory::createPageRenderer(
+    $pageRenderer = UiFactory::createPage(
         'Fatal Error - Enhanced Trading System',
         $errorNavigation,
         [$fatalErrorCard]

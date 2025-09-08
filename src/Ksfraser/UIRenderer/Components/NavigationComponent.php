@@ -45,7 +45,7 @@ class NavigationComponent implements ComponentInterface {
         
         $links = [];
         foreach ($this->navigationDto->menuItems as $item) {
-            $activeClass = ($item['page'] === $this->navigationDto->currentPage) ? ' active' : '';
+            $activeClass = ($item['active'] ?? false) ? ' active' : '';
             $links[] = "<a href='{$item['url']}' class='{$activeClass}'>{$item['label']}</a>";
         }
         
