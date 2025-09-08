@@ -1,10 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php"
-         colors="true"
-         verbose="true">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         cacheResultFile=".phpunit.result.cache"
+         executionOrder="depends,defects"
+         forceCoversAnnotation="false"
+         beStrictAboutCoversAnnotation="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTodoAnnotatedTests="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         verbose="true"
+         colors="true">
     <testsuites>
+        <testsuite name="Database">
+            <directory>src/Ksfraser/Database/tests</directory>
+        </testsuite>
+        <testsuite name="Auth">
+            <directory>src/Ksfraser/Auth/tests</directory>
+        </testsuite>
         <testsuite name="MicroCap Test Suite">
             <directory>./tests</directory>
         </testsuite>
+        <testsuite name="All">
+            <directory>src/Ksfraser/Database/tests</directory>
+            <directory>src/Ksfraser/Auth/tests</directory>
+            <directory>./tests</directory>
+        </testsuite>
     </testsuites>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">src/Ksfraser/Database</directory>
+            <directory suffix=".php">src/Ksfraser/Auth</directory>
+        </include>
+        <exclude>
+            <directory>src/Ksfraser/Database/tests</directory>
+            <directory>src/Ksfraser/Auth/tests</directory>
+        </exclude>
+    </coverage>
+
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+    </php>
 </phpunit>
