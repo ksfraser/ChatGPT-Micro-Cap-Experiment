@@ -136,7 +136,13 @@ class LegacyDatabaseConfig extends BaseDatabaseConfig {
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
+            PDO::ATTR_TIMEOUT => 5, // 5 second connection timeout
         ];
+        
+        // Set connection timeout at system level to prevent hanging
+        ini_set('default_socket_timeout', 5);
+        ini_set('mysql.connect_timeout', 5);
+        
         return new PDO($dsn, $c['username'], $c['password'], $options);
     }
 }

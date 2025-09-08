@@ -1,11 +1,11 @@
 <?php
 /**
- * Enhanced Trading System Dashboard - Compatible with existing F30 Apache auth
+ * Index.php - Fallback Version (Database-Free)
  * 
- * Uses the same authentication system that works for the admin dashboard
+ * This version works without database connectivity for testing purposes
  */
 
-// Enable error reporting for debugging in development
+// Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -13,65 +13,20 @@ ini_set('display_errors', 1);
 require_once 'UiRenderer.php';
 
 /**
- * Compatible Authentication Service using existing working auth system
+ * Mock Authentication Service - Single Responsibility for auth logic without DB
  */
-class CompatibleAuthenticationService {
-    private $isAuthenticated = false;
-    private $currentUser = null;
+class MockAuthenticationService {
+    private $isAuthenticated = true; // Default to authenticated for testing
+    private $currentUser = ['username' => 'TestUser'];
     private $isAdmin = false;
     private $authError = false;
-    private $errorMessage = '';
-    private $userAuth = null;
     
     public function __construct() {
-        $this->initializeAuthentication();
-    }
-    
-    private function initializeAuthentication() {
-        try {
-            // Use the same authentication method that works for admin dashboard
-            if (!headers_sent()) {
-                // Start session like auth_check.php does
-                if (session_status() === PHP_SESSION_NONE) {
-                    session_start();
-                }
-                
-                // Use the existing UserAuthDAO that works with F30 Apache
-                require_once __DIR__ . '/UserAuthDAO.php';
-                $this->userAuth = new UserAuthDAO();
-                
-                // Check authentication status
-                if ($this->userAuth->isLoggedIn()) {
-                    $this->isAuthenticated = true;
-                    $this->currentUser = $this->userAuth->getCurrentUser();
-                    $this->isAdmin = $this->userAuth->isAdmin();
-                } else {
-                    // Not logged in, but don't redirect - just show guest mode
-                    $this->isAuthenticated = false;
-                    $this->currentUser = ['username' => 'Guest'];
-                    $this->isAdmin = false;
-                }
-                
-            } else {
-                throw new Exception('Headers already sent - cannot initialize session');
-            }
-        } catch (Exception $e) {
-            $this->handleAuthFailure($e);
-        } catch (Error $e) {
-            $this->handleAuthFailure($e);
-        }
-    }
-    
-    private function handleAuthFailure($error) {
-        $this->authError = true;
-        $this->currentUser = ['username' => 'Guest (Auth Error)'];
-        $this->isAuthenticated = false;
+        // Simple mock authentication - no database required
+        $this->isAuthenticated = true;
+        $this->currentUser = ['username' => 'TestUser (Mock Auth)'];
         $this->isAdmin = false;
-        $this->errorMessage = $error->getMessage();
-        
-        // Log the error
-        error_log('Auth system failure in index.php: ' . $error->getMessage());
-        error_log('Auth error file: ' . $error->getFile() . ':' . $error->getLine());
+        $this->authError = false;
     }
     
     public function isAuthenticated() {
@@ -88,14 +43,6 @@ class CompatibleAuthenticationService {
     
     public function hasAuthError() {
         return $this->authError;
-    }
-    
-    public function getErrorMessage() {
-        return $this->errorMessage;
-    }
-    
-    public function getUserAuth() {
-        return $this->userAuth;
     }
 }
 
@@ -237,8 +184,7 @@ class DashboardContentService {
         $actions = [
             ['url' => 'portfolios.php', 'label' => 'Add Portfolio', 'class' => 'btn btn-success', 'icon' => '📈'],
             ['url' => 'trades.php', 'label' => 'Record Trade', 'class' => 'btn', 'icon' => '📋'],
-            ['url' => 'debug_500.php', 'label' => 'System Diagnostics', 'class' => 'btn btn-warning', 'icon' => '🔧'],
-            ['url' => 'network_test.php', 'label' => 'Network Test', 'class' => 'btn', 'icon' => '🌐']
+            ['url' => 'debug_500.php', 'label' => 'System Diagnostics', 'class' => 'btn btn-warning', 'icon' => '🔧']
         ];
         
         return UiFactory::createCard(
@@ -273,30 +219,28 @@ class DashboardContentService {
 }
 
 /**
- * Main Application Controller - Compatible with existing F30 Apache auth
+ * Main Application Controller - Orchestrates the entire page
+ * Follows Single Responsibility and Dependency Injection
  */
 class DashboardController {
     private $authService;
     private $contentService;
     
     public function __construct() {
-        $this->authService = new CompatibleAuthenticationService();
+        $this->authService = new MockAuthenticationService();
         $this->contentService = new DashboardContentService($this->authService);
     }
     
     public function renderPage() {
+        // Create navigation component
         $user = $this->authService->getCurrentUser();
         $isAdmin = $this->authService->isAdmin();
         $isAuthenticated = $this->authService->isAuthenticated();
         
         $menuItems = MenuService::getMenuItems('dashboard', $isAdmin, $isAuthenticated);
         
-        $title = $this->authService->hasAuthError() 
-            ? 'Enhanced Trading System Dashboard (Auth Error)'
-            : 'Enhanced Trading System Dashboard';
-        
         $navigation = UiFactory::createNavigationComponent(
-            $title,
+            'Enhanced Trading System Dashboard (Fallback Mode)',
             'dashboard',
             $user,
             $isAdmin,
@@ -304,8 +248,10 @@ class DashboardController {
             $isAuthenticated
         );
         
+        // Create page content components
         $components = $this->contentService->createDashboardComponents();
         
+        // Create and render the complete page
         $pageRenderer = UiFactory::createPageRenderer(
             'Dashboard - Enhanced Trading System',
             $navigation,
