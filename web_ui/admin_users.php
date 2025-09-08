@@ -246,16 +246,35 @@ $currentUser = $userAuth->getCurrentUser();
         color: #666;
         font-size: 14px;
     }
+    
+    /* Navigation compatibility */
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    
+    .user-management {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
 </style>
+
+<?php
+// Include navigation header
+require_once 'nav_header.php';
+?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management - Admin</title>
+    <title>User Management - Enhanced Trading System</title>
 </head>
 <body>
+
+<?php renderNavigationHeader('User Management - Enhanced Trading System'); ?>
 
 <div class="user-management">
     <h1>👥 User Management</h1>

@@ -149,9 +149,26 @@ $user = $auth->getCurrentUser();
             margin: 1rem 0;
             color: #1976d2;
         }
+        
+        /* Navigation compatibility - adjust for nav header */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
+
+<?php
+// Include navigation header
+require_once 'nav_header.php';
+renderNavigationHeader('Portfolio Dashboard - Enhanced Trading System');
+?>
+
     <header class="header">
         <div class="header-content">
             <h1>💼 Portfolio Dashboard</h1>

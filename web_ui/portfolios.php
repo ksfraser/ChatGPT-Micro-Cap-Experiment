@@ -1,3 +1,14 @@
+<?php
+/**
+ * Portfolio Management - Enhanced Trading System
+ */
+
+// Include authentication check (will redirect if not logged in)
+require_once 'auth_check.php';
+
+// Include navigation header
+require_once 'nav_header.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,9 +18,9 @@
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0; padding: 20px; background: #f5f5f5; 
+            margin: 0; padding: 0; background: #f5f5f5; 
         }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .card { 
             background: white; padding: 20px; margin: 10px 0; border-radius: 8px; 
@@ -27,13 +38,16 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Portfolio Management</h1>
-            <p>View and manage trading portfolios across different market categories</p>
-    <?php require_once 'QuickActions.php'; ?>
-    <?php QuickActions::render(); ?>
-        </div>
+
+<?php renderNavigationHeader('Portfolio Management'); ?>
+
+<div class="container">
+    <div class="header">
+        <h1>Portfolio Management</h1>
+        <p>View and manage trading portfolios across different market categories</p>
+        <?php require_once 'QuickActions.php'; ?>
+        <?php QuickActions::render(); ?>
+    </div>
         
         <div class="card">
             <h3>Portfolio Data Locations & Latest Data</h3>

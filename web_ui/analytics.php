@@ -1,3 +1,14 @@
+<?php
+/**
+ * Analytics Dashboard - Enhanced Trading System
+ */
+
+// Include authentication check (will redirect if not logged in)
+require_once 'auth_check.php';
+
+// Include navigation header
+require_once 'nav_header.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,13 +19,16 @@
     <?php UiStyles::render(); ?>
 </head>
 <body>
-    <div class="container">
-        <?php require_once 'QuickActions.php'; ?>
-        <?php QuickActions::render(); ?>
-        <div class="header">
-            <h1>Analytics Dashboard</h1>
-            <p>Portfolio performance analysis and trading metrics</p>
-        </div>
+
+<?php renderNavigationHeader('Analytics Dashboard'); ?>
+
+<div class="container">
+    <?php require_once 'QuickActions.php'; ?>
+    <?php QuickActions::render(); ?>
+    <div class="header">
+        <h1>Analytics Dashboard</h1>
+        <p>Portfolio performance analysis and trading metrics</p>
+    </div>
         
         <div class="card success">
             <h3>📊 Analytics Architecture</h3>
