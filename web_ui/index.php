@@ -321,21 +321,70 @@ try {
     $controller = new DashboardController();
     echo $controller->renderPage();
 } catch (Exception $e) {
-    // Fallback error page
-    echo '<!DOCTYPE html><html><head><title>Error</title></head><body>';
-    echo '<h1>System Error</h1>';
-    echo '<p>The system encountered an error. Please try again later.</p>';
-    echo '<p>Error: ' . htmlspecialchars($e->getMessage()) . '</p>';
-    echo '<p>File: ' . htmlspecialchars($e->getFile()) . '</p>';
-    echo '<p>Line: ' . $e->getLine() . '</p>';
-    echo '</body></html>';
+    // Use UiRenderer for error pages instead of raw echo
+    $errorNavigation = UiFactory::createNavigationComponent(
+        'System Error',
+        'error',
+        ['username' => 'Guest'],
+        false,
+        [],
+        false
+    );
+    
+    $errorCard = UiFactory::createCardComponent(
+        'System Error',
+        'error',
+        '<p>The system encountered an error. Please try again later.</p>' .
+        '<div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-left: 4px solid #dc3545;">' .
+        '<strong>Error Details:</strong><br>' .
+        'Message: ' . htmlspecialchars($e->getMessage()) . '<br>' .
+        'File: ' . htmlspecialchars($e->getFile()) . '<br>' .
+        'Line: ' . $e->getLine() .
+        '</div>' .
+        '<div style="margin-top: 20px;">' .
+        '<a href="index.php" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Try Again</a>' .
+        '</div>'
+    );
+    
+    $pageRenderer = UiFactory::createPageRenderer(
+        'System Error - Enhanced Trading System',
+        $errorNavigation,
+        [$errorCard]
+    );
+    
+    echo $pageRenderer->render();
 } catch (Error $e) {
-    echo '<!DOCTYPE html><html><head><title>Fatal Error</title></head><body>';
-    echo '<h1>System Fatal Error</h1>';
-    echo '<p>The system encountered a fatal error. Please contact support.</p>';
-    echo '<p>Error: ' . htmlspecialchars($e->getMessage()) . '</p>';
-    echo '<p>File: ' . htmlspecialchars($e->getFile()) . '</p>';
-    echo '<p>Line: ' . $e->getLine() . '</p>';
-    echo '</body></html>';
+    // Use UiRenderer for fatal error pages
+    $errorNavigation = UiFactory::createNavigationComponent(
+        'Fatal Error',
+        'fatal_error',
+        ['username' => 'Guest'],
+        false,
+        [],
+        false
+    );
+    
+    $fatalErrorCard = UiFactory::createCardComponent(
+        'Fatal System Error',
+        'fatal',
+        '<p>The system encountered a fatal error. Please contact support.</p>' .
+        '<div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107;">' .
+        '<strong>Fatal Error Details:</strong><br>' .
+        'Message: ' . htmlspecialchars($e->getMessage()) . '<br>' .
+        'File: ' . htmlspecialchars($e->getFile()) . '<br>' .
+        'Line: ' . $e->getLine() .
+        '</div>' .
+        '<div style="margin-top: 20px;">' .
+        '<a href="index.php" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Reload Page</a>' .
+        '</div>'
+    );
+    
+    $pageRenderer = UiFactory::createPageRenderer(
+        'Fatal Error - Enhanced Trading System',
+        $errorNavigation,
+        [$fatalErrorCard]
+    );
+    
+    echo $pageRenderer->render();
 }
 ?>

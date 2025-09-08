@@ -58,16 +58,14 @@ require_once 'NavigationManager.php';
                 <p><strong>Purpose:</strong> CSV-mirrored original data</p>
                 <p><strong>Data Directory:</strong> data_micro_cap/</p>
                 <?php
-                // Use generalized PortfolioDAO for micro-cap
-                require_once __DIR__ . '/PortfolioDAO.php';
+                // Use refactored PortfolioDAO with clean architecture
+                require_once __DIR__ . '/RefactoredPortfolioDAO.php';
                 $csvPaths = [
                     '../Scripts and CSV Files/chatgpt_portfolio_update.csv',
                     '../Start Your Own/chatgpt_portfolio_update.csv',
                     '../data_micro_cap/chatgpt_portfolio_update.csv',
                 ];
-                $csvFile = null;
-                foreach ($csvPaths as $p) { if (file_exists($p)) { $csvFile = $p; break; } }
-                $dao = new PortfolioDAO($csvFile ?: $csvPaths[0], 'portfolio_data', 'MicroCapDatabaseConfig');
+                $dao = new PortfolioDAO($csvPaths);
                 $portfolioRows = $dao->readPortfolio();
                 $errors = $dao->getErrors();
                 if ($portfolioRows && count($portfolioRows)) {
@@ -96,16 +94,13 @@ require_once 'NavigationManager.php';
                     echo '<button class="btn btn-secondary" type="submit">Retry Last Failed Save</button>';
                     echo '</form>';
                 }
-                // Handle retry POST
+                // Handle retry POST for micro-cap
                 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_microcap'])) {
-                    if ($retryData) {
-                        $ok = $dao->writePortfolio($retryData);
-                        if ($ok) {
-                            echo '<div style="color:#080;margin-top:10px;">Retry successful!</div>';
-                            $dao->clearRetryData();
-                        } else {
-                            echo '<div style="color:#b00;margin-top:10px;">Retry failed. Please check errors above.</div>';
-                        }
+                    $success = $dao->retryLastOperation();
+                    if ($success) {
+                        echo '<div style="color:#080;margin-top:10px;">Retry successful!</div>';
+                    } else {
+                        echo '<div style="color:#b00;margin-top:10px;">Retry failed. Please check errors above.</div>';
                     }
                 }
                 ?>
@@ -123,15 +118,13 @@ require_once 'NavigationManager.php';
                 <p><strong>Purpose:</strong> Enhanced features</p>
                 <p><strong>Data Directory:</strong> data_blue-chip_cap/</p>
                 <?php
-                // Use generalized PortfolioDAO for blue-chip
+                // Use refactored PortfolioDAO for blue-chip
                 $csvPaths = [
                     '../Scripts and CSV Files/blue_chip_cap_portfolio.csv',
                     '../Start Your Own/blue_chip_cap_portfolio.csv',
                     '../data_blue_chip/blue_chip_cap_portfolio.csv',
                 ];
-                $csvFile = null;
-                foreach ($csvPaths as $p) { if (file_exists($p)) { $csvFile = $p; break; } }
-                $dao = new PortfolioDAO($csvFile ?: $csvPaths[0], 'portfolios_blue_chip', 'LegacyDatabaseConfig');
+                $dao = new PortfolioDAO($csvPaths);
                 $portfolioRows = $dao->readPortfolio();
                 $errors = $dao->getErrors();
                 if ($portfolioRows && count($portfolioRows)) {
@@ -159,15 +152,13 @@ require_once 'NavigationManager.php';
                     echo '<button class="btn btn-secondary" type="submit">Retry Last Failed Save</button>';
                     echo '</form>';
                 }
+                // Handle retry POST for blue-chip
                 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_bluechip'])) {
-                    if ($retryData) {
-                        $ok = $dao->writePortfolio($retryData);
-                        if ($ok) {
-                            echo '<div style="color:#080;margin-top:10px;">Retry successful!</div>';
-                            $dao->clearRetryData();
-                        } else {
-                            echo '<div style="color:#b00;margin-top:10px;">Retry failed. Please check errors above.</div>';
-                        }
+                    $success = $dao->retryLastOperation();
+                    if ($success) {
+                        echo '<div style="color:#080;margin-top:10px;">Retry successful!</div>';
+                    } else {
+                        echo '<div style="color:#b00;margin-top:10px;">Retry failed. Please check errors above.</div>';
                     }
                 }
                 ?>
@@ -178,15 +169,13 @@ require_once 'NavigationManager.php';
                 <p><strong>Purpose:</strong> Enhanced features</p>
                 <p><strong>Data Directory:</strong> data_small_cap/</p>
                 <?php
-                // Use generalized PortfolioDAO for small-cap
+                // Use refactored PortfolioDAO for small-cap
                 $csvPaths = [
                     '../Scripts and CSV Files/small_cap_portfolio.csv',
                     '../Start Your Own/small_cap_portfolio.csv',
                     '../data_small_cap/small_cap_portfolio.csv',
                 ];
-                $csvFile = null;
-                foreach ($csvPaths as $p) { if (file_exists($p)) { $csvFile = $p; break; } }
-                $dao = new PortfolioDAO($csvFile ?: $csvPaths[0], 'portfolios_small_cap', 'LegacyDatabaseConfig');
+                $dao = new PortfolioDAO($csvPaths);
                 $portfolioRows = $dao->readPortfolio();
                 $errors = $dao->getErrors();
                 if ($portfolioRows && count($portfolioRows)) {
@@ -214,15 +203,13 @@ require_once 'NavigationManager.php';
                     echo '<button class="btn btn-secondary" type="submit">Retry Last Failed Save</button>';
                     echo '</form>';
                 }
+                // Handle retry POST for small-cap
                 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_smallcap'])) {
-                    if ($retryData) {
-                        $ok = $dao->writePortfolio($retryData);
-                        if ($ok) {
-                            echo '<div style="color:#080;margin-top:10px;">Retry successful!</div>';
-                            $dao->clearRetryData();
-                        } else {
-                            echo '<div style="color:#b00;margin-top:10px;">Retry failed. Please check errors above.</div>';
-                        }
+                    $success = $dao->retryLastOperation();
+                    if ($success) {
+                        echo '<div style="color:#080;margin-top:10px;">Retry successful!</div>';
+                    } else {
+                        echo '<div style="color:#b00;margin-top:10px;">Retry failed. Please check errors above.</div>';
                     }
                 }
                 ?>

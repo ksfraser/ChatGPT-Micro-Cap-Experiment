@@ -3,7 +3,8 @@
  * Trade Management - Enhanced Trading System
  */
 
-// Include authentication check (will redirect if not logged in)
+// Include authentication c            <?php require_once 'RefactoredTradeLogDAO.php'; ?>
+            <form method="get" style="margin-bottom:20px;display:flex;gap:20px;flex-wrap:wrap;align-items:end;">"ck (will redirect if not logged in)
 require_once 'auth_check.php';
 
 // Include NavigationManager for consistent navigation
@@ -111,7 +112,7 @@ require_once 'NavigationManager.php';
                         'cost_min' => $_GET['cost_min'] ?? '',
                         'cost_max' => $_GET['cost_max'] ?? '',
                     ];
-                    $dao = new TradeLogDAO('../Scripts and CSV Files/chatgpt_trade_log.csv', 'trade_log', 'MicroCapDatabaseConfig');
+                    $dao = new TradeLogDAO('../Scripts and CSV Files/chatgpt_trade_log.csv');
                     $rows = $dao->readTradeLog($filters);
                     $errors = $dao->getErrors();
                     if ($rows && count($rows)) {
@@ -138,7 +139,7 @@ require_once 'NavigationManager.php';
                 <div style="flex:1; min-width:320px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background:#fafbfc;">
                     <h4>Blue-Chip Trade Log (DB/CSV)</h4>
                     <?php
-                    $dao = new TradeLogDAO('../Scripts and CSV Files/blue_chip_cap_trade_log.csv', 'trade_log', 'LegacyDatabaseConfig');
+                    $dao = new TradeLogDAO('../Scripts and CSV Files/blue_chip_cap_trade_log.csv');
                     $rows = $dao->readTradeLog($filters);
                     $errors = $dao->getErrors();
                     if ($rows && count($rows)) {
