@@ -35,11 +35,13 @@ class TableComponent implements ComponentInterface {
         if ($this->options['striped']) $tableClass .= ' table-striped';
         if ($this->options['class']) $tableClass .= ' ' . $this->options['class'];
         
+        $idAttribute = isset($this->options['id']) ? ' id="' . htmlspecialchars($this->options['id']) . '"' : '';
+        
         $headerHtml = $this->renderHeaders();
         $bodyHtml = $this->renderBody();
         
         $tableHtml = "
-        <table class='{$tableClass}'>
+        <table class='{$tableClass}'{$idAttribute}>
             {$headerHtml}
             <tbody>
                 {$bodyHtml}

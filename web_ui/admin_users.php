@@ -4,6 +4,15 @@
  */
 
 require_once __DIR__ . '/UserAuthDAO.php';
+require_once __DIR__ . '/../src/Ksfraser/UIRenderer/autoload.php';
+require_once 'MenuService.php';
+
+// Use the UiFactory for components
+use Ksfraser\UIRenderer\Factories\UiFactory;
+
+// Use the User namespace classes for user management
+use Ksfraser\User\DTOs\UserManagementRequest;
+use Ksfraser\User\Services\UserManagementService;
 
 // Check if user is admin
 $userAuth = new UserAuthDAO();
@@ -11,76 +20,34 @@ $userAuth->requireAdmin();
 
 $currentUser = $userAuth->getCurrentUser();
 
-$message = '';
-$messageType = '';
-
-// Handle form submissions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['create_user'])) {
-        $username = trim($_POST['username']);
-        $email = trim($_POST['email']);
-        $password = $_POST['password'];
-        $isAdmin = isset($_POST['is_admin']);
+/**
+ * Handle form submissions using properly namespaced Auth classes
+ */
+function handleUserManagementForms($userAuth, $currentUser) {
+    $message = '';
+    $messageType = '';
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $request = new UserManagementRequest();
         
-        try {
-            $userId = $userAuth->registerUser($username, $email, $password, $isAdmin);
-            if ($userId) {
-                $message = 'User created successfully with ID: ' . $userId;
-                $messageType = 'success';
-            } else {
-                $message = 'Failed to create user';
-                $messageType = 'error';
-            }
-        } catch (Exception $e) {
-            $message = 'Error creating user: ' . $e->getMessage();
-            $messageType = 'error';
-        }
-    } elseif (isset($_POST['delete_user'])) {
-        $userId = (int)$_POST['user_id'];
-        $currentUser = $userAuth->getCurrentUser();
-        
-        if ($userId === $currentUser['id']) {
-            $message = 'Cannot delete your own account!';
-            $messageType = 'error';
-        } else {
-            try {
-                if ($userAuth->deleteUser($userId)) {
-                    $message = 'User deleted successfully!';
-                    $messageType = 'success';
-                } else {
-                    $message = 'Failed to delete user.';
-                    $messageType = 'error';
-                }
-            } catch (Exception $e) {
-                $message = 'Error deleting user: ' . $e->getMessage();
-                $messageType = 'error';
-            }
-        }
-    } elseif (isset($_POST['toggle_admin'])) {
-        $userId = (int)$_POST['user_id'];
-        $newAdminStatus = isset($_POST['is_admin']) ? $_POST['is_admin'] : 0;
-        $currentUser = $userAuth->getCurrentUser();
-        
-        if ($userId === $currentUser['id']) {
-            $message = 'Cannot modify your own admin status!';
-            $messageType = 'error';
-        } else {
-            try {
-                if ($userAuth->updateUserAdminStatus($userId, $newAdminStatus)) {
-                    $actionText = $newAdminStatus ? 'promoted to admin' : 'changed to regular user';
-                    $message = "User {$actionText} successfully!";
-                    $messageType = 'success';
-                } else {
-                    $message = 'Failed to update user admin status.';
-                    $messageType = 'error';
-                }
-            } catch (Exception $e) {
-                $message = 'Error updating user: ' . $e->getMessage();
-                $messageType = 'error';
+        if ($request->hasAction()) {
+            $service = new UserManagementService($userAuth, $currentUser);
+            
+            if ($request->isCreateAction()) {
+                list($message, $messageType) = $service->createUser($request);
+            } elseif ($request->isDeleteAction()) {
+                list($message, $messageType) = $service->deleteUser($request);
+            } elseif ($request->isToggleAdminAction()) {
+                list($message, $messageType) = $service->toggleAdminStatus($request);
             }
         }
     }
+    
+    return [$message, $messageType];
 }
+
+// Handle form submissions
+list($message, $messageType) = handleUserManagementForms($userAuth, $currentUser);
 
 // Get all users
 try {
@@ -280,6 +247,7 @@ $currentUser = $userAuth->getCurrentUser();
         <?php 
         // Include NavigationManager for consistent navigation
         require_once 'NavigationManager.php';
+        $navManager = new NavigationManager();
         echo $navManager->getNavigationCSS(); 
         ?>
     </style>

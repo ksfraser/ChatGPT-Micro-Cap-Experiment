@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Filter Test</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h2>Portfolio Filter Test</h2>
+    
+    <div style="margin: 15px 0; padding: 10px; background-color: #f8f9fa;">
+        <label><input type="checkbox" id="filter-recent" checked> Show Recent Only</label>
+        <label><input type="checkbox" id="filter-profitable"> Profitable Only</label>
+        <label><input type="checkbox" id="filter-large-positions"> Large Positions (>$1000)</label>
+        <select id="sort-by" style="padding: 5px; margin-left: 10px;">
+            <option value="none">No Sorting</option>
+            <option value="date">Sort by Date (Recent First)</option>
+            <option value="value">Sort by Value (Highest First)</option>
+            <option value="symbol">Sort by Symbol (A-Z)</option>
+        </select>
+        <button onclick="applyFilters()" class="btn">Apply Filters</button>
+        <button onclick="resetFilters()" class="btn">Reset</button>
+    </div>
+    
+    <div id="filter-status" style="margin: 5px 0; color: #666;"></div>
+    
+    <table id="micro-cap-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Ticker</th>
+                <th>Shares</th>
+                <th>Current Price</th>
+                <th>Total Value</th>
+                <th>PnL</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>2025-06-30</td>
+                <td>ABEO</td>
+                <td>6.0</td>
+                <td>5.68</td>
+                <td>34.08</td>
+                <td>-0.54</td>
+                <td>HOLD</td>
+            </tr>
+            <tr>
+                <td>2025-06-30</td>
+                <td>CADL</td>
+                <td>5.0</td>
+                <td>5.06</td>
+                <td>25.3</td>
+                <td>0.1</td>
+                <td>HOLD</td>
+            </tr>
+            <tr>
+                <td>2025-06-30</td>
+                <td>CSAI</td>
+                <td>15.0</td>
+                <td>2.21</td>
+                <td>33.15</td>
+                <td>4.65</td>
+                <td>HOLD</td>
+            </tr>
+            <tr>
+                <td>2025-06-30</td>
+                <td>TOTAL</td>
+                <td></td>
+                <td></td>
+                <td>92.53</td>
+                <td>4.21</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>2025-07-01</td>
+                <td>ABEO</td>
+                <td>6.0</td>
+                <td>5.57</td>
+                <td>33.42</td>
+                <td>-1.2</td>
+                <td>HOLD</td>
+            </tr>
+            <tr>
+                <td>2025-07-01</td>
+                <td>CADL</td>
+                <td>5.0</td>
+                <td>4.85</td>
+                <td>24.25</td>
+                <td>-0.95</td>
+                <td>HOLD</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        function applyFilters() {
+            const table = document.getElementById("micro-cap-table");
+            if (!table) {
+                console.log("Table not found: micro-cap-table");
+                return;
+            }
+            
+            const showRecent = document.getElementById("filter-recent").checked;
+            const showProfitable = document.getElementById("filter-profitable").checked;
+            const showLarge = document.getElementById("filter-large-positions").checked;
+            
+            const tbody = table.querySelector("tbody");
+            if (!tbody) {
+                console.log("Table body not found");
+                return;
+            }
+            
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+            console.log("Found " + rows.length + " rows to filter");
+            console.log("Filters: Recent=" + showRecent + ", Profitable=" + showProfitable + ", Large=" + showLarge);
+            
+            // Filter rows
+            rows.forEach(row => {
+                let show = true;
+                const cells = Array.from(row.querySelectorAll("td"));
+                
+                // Skip TOTAL rows from filtering
+                const isTotal = cells.some(cell => cell.textContent.toLowerCase().includes("total"));
+                if (isTotal) {
+                    row.style.display = ""; // Always show TOTAL rows
+                    return;
+                }
+                
+                if (showProfitable && cells.length > 0) {
+                    // Look for positive PnL values specifically
+                    let isProfitable = false;
+                    cells.forEach((cell, index) => {
+                        const headerCells = table.querySelectorAll("thead th");
+                        if (headerCells[index]) {
+                            const headerText = headerCells[index].textContent.toLowerCase();
+                            const cellText = cell.textContent.trim();
+                            
+                            // Check PnL column specifically - this is the main profit indicator
+                            if (headerText.includes("pnl") || headerText.includes("profit") || headerText.includes("p&l")) {
+                                const value = parseFloat(cellText.replace(/[^0-9.-]/g, ""));
+                                console.log("Row " + (index+1) + " PnL: '" + cellText + "' -> " + value + " (profitable: " + (value > 0) + ")");
+                                if (!isNaN(value) && value > 0) {
+                                    isProfitable = true;
+                                }
+                            }
+                        }
+                    });
+                    console.log("Row overall profitable: " + isProfitable);
+                    if (!isProfitable) show = false;
+                }
+                
+                if (showLarge && cells.length > 0) {
+                    // Look for large monetary values in Total Value or Cost Basis columns
+                    let hasLargePosition = false;
+                    cells.forEach((cell, index) => {
+                        const headerCells = table.querySelectorAll("thead th");
+                        if (headerCells[index]) {
+                            const headerText = headerCells[index].textContent.toLowerCase();
+                            const cellText = cell.textContent.trim();
+                            
+                            if ((headerText.includes("value") || headerText.includes("cost") || headerText.includes("basis")) && 
+                                cellText && cellText !== "") {
+                                const value = parseFloat(cellText.replace(/[^0-9.-]/g, ""));
+                                if (!isNaN(value) && Math.abs(value) > 1000) {
+                                    hasLargePosition = true;
+                                }
+                            }
+                        }
+                    });
+                    if (!hasLargePosition) show = false;
+                }
+                
+                console.log("Row show: " + show);
+                row.style.display = show ? "" : "none";
+            });
+            
+            // Apply sorting after filtering
+            const sortBy = document.getElementById("sort-by").value;
+            if (sortBy && sortBy !== "none") {
+                sortTable(table, sortBy);
+            }
+            
+            // Show filter results
+            const visibleRows = rows.filter(row => row.style.display !== "none");
+            console.log("Showing " + visibleRows.length + " of " + rows.length + " rows");
+            
+            // Update status
+            const status = document.getElementById("filter-status");
+            if (status) {
+                status.textContent = "Showing " + visibleRows.length + " of " + rows.length + " entries";
+            }
+        }
+        
+        function resetFilters() {
+            // Reset checkboxes
+            document.getElementById("filter-recent").checked = true;
+            document.getElementById("filter-profitable").checked = false;
+            document.getElementById("filter-large-positions").checked = false;
+            document.getElementById("sort-by").value = "none";
+            
+            // Show all rows
+            const table = document.getElementById("micro-cap-table");
+            if (table) {
+                const rows = table.querySelectorAll("tbody tr");
+                rows.forEach(row => {
+                    row.style.display = "";
+                });
+                
+                // Update status
+                const status = document.getElementById("filter-status");
+                if (status) {
+                    status.textContent = "Showing all " + rows.length + " entries";
+                }
+            }
+        }
+        
+        function sortTable(table, sortBy) {
+            const tbody = table.querySelector("tbody");
+            if (!tbody) return;
+            
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+            const headerCells = table.querySelectorAll("thead th");
+            
+            // Find the column index for sorting
+            let sortColumnIndex = -1;
+            headerCells.forEach((header, index) => {
+                const headerText = header.textContent.toLowerCase();
+                if (sortBy === "date" && headerText.includes("date")) {
+                    sortColumnIndex = index;
+                } else if (sortBy === "symbol" && (headerText.includes("ticker") || headerText.includes("symbol"))) {
+                    sortColumnIndex = index;
+                } else if (sortBy === "value" && (headerText.includes("value") || headerText.includes("price"))) {
+                    sortColumnIndex = index;
+                }
+            });
+            
+            if (sortColumnIndex === -1) return; // Column not found
+            
+            // Sort rows (exclude TOTAL rows from sorting)
+            const dataRows = rows.filter(row => {
+                const cells = row.querySelectorAll("td");
+                return !Array.from(cells).some(cell => cell.textContent.toLowerCase().includes("total"));
+            });
+            
+            const totalRows = rows.filter(row => {
+                const cells = row.querySelectorAll("td");
+                return Array.from(cells).some(cell => cell.textContent.toLowerCase().includes("total"));
+            });
+            
+            dataRows.sort((rowA, rowB) => {
+                const cellA = rowA.querySelectorAll("td")[sortColumnIndex];
+                const cellB = rowB.querySelectorAll("td")[sortColumnIndex];
+                
+                if (!cellA || !cellB) return 0;
+                
+                const valueA = cellA.textContent.trim();
+                const valueB = cellB.textContent.trim();
+                
+                // Handle different sort types
+                if (sortBy === "date") {
+                    const dateA = new Date(valueA);
+                    const dateB = new Date(valueB);
+                    return dateB - dateA; // Most recent first
+                } else if (sortBy === "value") {
+                    const numA = parseFloat(valueA.replace(/[^0-9.-]/g, "")) || 0;
+                    const numB = parseFloat(valueB.replace(/[^0-9.-]/g, "")) || 0;
+                    return numB - numA; // Highest value first
+                } else if (sortBy === "symbol") {
+                    return valueA.localeCompare(valueB); // Alphabetical
+                }
+                
+                return 0;
+            });
+            
+            // Clear tbody and re-append sorted rows
+            tbody.innerHTML = "";
+            dataRows.forEach(row => tbody.appendChild(row));
+            totalRows.forEach(row => tbody.appendChild(row)); // TOTAL rows always at the end
+        }
+    </script>
+</body>
+</html>
