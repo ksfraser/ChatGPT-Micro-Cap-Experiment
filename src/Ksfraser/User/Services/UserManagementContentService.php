@@ -19,41 +19,15 @@ class UserManagementContentService {
         $this->userAuth = $userAuth;
         $this->currentUser = $currentUser;
         $this->isAdmin = $isAdmin;
-        $this->message = '';
-        $this->messageType = '';
-        
-        // Handle form submissions
-        $this->handleFormSubmissions();
-    }
-    
-    /**
-     * Handle form submissions using User namespace classes
-     */
-    private function handleFormSubmissions() {
-        // Temporarily disabled for testing
-        /*
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $request = new UserManagementRequest();
-            
-            if ($request->hasAction()) {
-                $service = new UserManagementService($this->userAuth, $this->currentUser);
-                
-                if ($request->isCreateAction()) {
-                    list($this->message, $this->messageType) = $service->createUser($request);
-                } elseif ($request->isDeleteAction()) {
-                    list($this->message, $this->messageType) = $service->deleteUser($request);
-                } elseif ($request->isToggleAdminAction()) {
-                    list($this->message, $this->messageType) = $service->toggleAdminStatus($request);
-                }
-            }
-        }
-        */
     }
     
     /**
      * Create user management dashboard components
      */
-    public function createUserManagementComponents() {
+    public function createUserManagementComponents($message = '', $messageType = '') {
+        $this->message = $message;
+        $this->messageType = $messageType;
+        
         $components = [];
         
         // Message alert if any

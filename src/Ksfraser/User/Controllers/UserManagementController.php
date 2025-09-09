@@ -4,6 +4,8 @@ namespace Ksfraser\User\Controllers;
 
 use Ksfraser\UIRenderer\Factories\UiFactory;
 use Ksfraser\User\Services\UserManagementContentService;
+use Ksfraser\User\Services\UserManagementService;
+use Ksfraser\User\DTOs\UserManagementRequest;
 use Exception;
 
 /**
@@ -12,9 +14,12 @@ use Exception;
  */
 class UserManagementController {
     private $contentService;
+    private $userService;
     private $currentUser;
     private $isAdmin;
     private $userAuth;
+    private $message = '';
+    private $messageType = '';
     
     public function __construct($userAuth) {
         $this->userAuth = $userAuth;
@@ -22,6 +27,29 @@ class UserManagementController {
         $this->isAdmin = $this->currentUser ? $userAuth->isAdmin() : false;
         
         $this->contentService = new UserManagementContentService($userAuth, $this->currentUser, $this->isAdmin);
+        $this->userService = new UserManagementService($userAuth, $this->currentUser);
+        
+        // Handle form submissions
+        $this->handleFormSubmissions();
+    }
+    
+    /**
+     * Handle form submissions using the service layer
+     */
+    private function handleFormSubmissions() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $request = new UserManagementRequest();
+            
+            if ($request->hasAction()) {
+                if ($request->isCreateAction()) {
+                    list($this->message, $this->messageType) = $this->userService->createUser($request);
+                } elseif ($request->isDeleteAction()) {
+                    list($this->message, $this->messageType) = $this->userService->deleteUser($request);
+                } elseif ($request->isToggleAdminAction()) {
+                    list($this->message, $this->messageType) = $this->userService->toggleAdminStatus($request);
+                }
+            }
+        }
     }
     
     /**
@@ -49,7 +77,7 @@ class UserManagementController {
         $menuItems = $this->getMenuItems();
         
         // Generate page components
-        $components = $this->contentService->createUserManagementComponents();
+        $components = $this->contentService->createUserManagementComponents($this->message, $this->messageType);
         
         // Create navigation
         $navigation = UiFactory::createNavigation(
