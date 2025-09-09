@@ -1,0 +1,15 @@
+Starting auth test
+SessionManager loaded
+SessionManager instance created
+UserAuthDAO class loaded
+UserAuthDAO instance created
+isLoggedIn called, result: false
+Starting auth test
+SessionManager loaded
+SessionManager instance created
+UserAuthDAO class loaded
+UserAuthDAO instance created
+isLoggedIn called, result: false
+Starting include test
+About to include auth_check.php
+Exception caught: Authentication error: User not logged in - redirect to login required

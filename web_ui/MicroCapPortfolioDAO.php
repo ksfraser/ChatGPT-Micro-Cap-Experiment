@@ -12,7 +12,9 @@ class MicroCapPortfolioDAO {
     public function __construct($csvPath) {
         $this->csvPath = $csvPath;
         $this->pdo = null;
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        // Use centralized SessionManager instead of direct session_start()
+        require_once __DIR__ . '/SessionManager.php';
+        SessionManager::getInstance();
         $this->connectDb();
     }
 

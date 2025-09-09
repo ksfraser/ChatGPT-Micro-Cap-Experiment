@@ -193,8 +193,10 @@ class UserAuthDAO extends CommonDAO {
      */
     public function requireLogin($redirectUrl = 'login.php') {
         if (!$this->isLoggedIn()) {
-            header("Location: $redirectUrl");
-            exit;
+            if (!headers_sent()) {
+                header("Location: $redirectUrl");
+            }
+            throw new Exception("User not logged in - redirect to login required");
         }
     }
     

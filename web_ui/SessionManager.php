@@ -13,10 +13,73 @@ class SessionManager {
     }
     
     /**
+     * Ensure session save path exists and is writable
+     */
+    private function ensureSessionPath() {
+        // Only modify session settings if headers haven't been sent
+        if (headers_sent()) {
+            return;
+        }
+        
+        $currentPath = session_save_path();
+        
+        // If no path is set or path doesn't exist, set a safe default
+        if (empty($currentPath) || !is_dir($currentPath)) {
+            // Try multiple possible paths in order of preference
+            $possiblePaths = [
+                sys_get_temp_dir() . '/sessions',  // System temp + sessions subdirectory
+                __DIR__ . '/../tmp/sessions',      // Application tmp directory
+                __DIR__ . '/sessions',             // Sessions in web_ui directory
+                sys_get_temp_dir()                 // Fall back to system temp
+            ];
+            
+            foreach ($possiblePaths as $path) {
+                if ($this->createSessionPath($path)) {
+                    session_save_path($path);
+                    break;
+                }
+            }
+        }
+    }
+    
+    /**
+     * Create and set permissions for session path
+     */
+    private function createSessionPath($path) {
+        try {
+            if (!is_dir($path)) {
+                if (!mkdir($path, 0755, true)) {
+                    return false;
+                }
+            }
+            
+            // Check if path is writable
+            if (!is_writable($path)) {
+                // Try to make it writable
+                chmod($path, 0755);
+                if (!is_writable($path)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        } catch (Exception $e) {
+            // Log error but don't fail initialization
+            if (php_sapi_name() !== 'cli') {
+                error_log('SessionManager: Failed to create session path ' . $path . ': ' . $e->getMessage());
+            }
+            return false;
+        }
+    }
+    
+    /**
      * Initialize session safely with header checking
      */
     private function initializeSession() {
         try {
+            // Ensure session save path exists and is writable
+            $this->ensureSessionPath();
+            
             if (session_status() === PHP_SESSION_NONE) {
                 if (!headers_sent($file, $line)) {
                     session_start();

@@ -12,12 +12,9 @@ class NavigationManager {
     
     public function __construct() {
         // Initialize authentication - handle sessions carefully
-        if (session_status() === PHP_SESSION_NONE) {
-            // Only start session if no output has been sent
-            if (!headers_sent()) {
-                session_start();
-            }
-        }
+        // Use centralized SessionManager instead of direct session handling
+        require_once __DIR__ . '/SessionManager.php';
+        SessionManager::getInstance();
         
         try {
             require_once __DIR__ . '/UserAuthDAO.php';

@@ -19,9 +19,9 @@ class UserPortfolioManager extends CommonDAO {
         $this->baseTableName = $baseTableName;
         $this->baseCsvPath = $baseCsvPath ?: __DIR__ . '/../Scripts and CSV Files/chatgpt_portfolio_update.csv';
         
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        // Use centralized SessionManager instead of direct session_start()
+        require_once __DIR__ . '/SessionManager.php';
+        SessionManager::getInstance();
     }
     
     /**

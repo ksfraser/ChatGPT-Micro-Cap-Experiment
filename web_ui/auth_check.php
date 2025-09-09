@@ -33,8 +33,10 @@ try {
             $loginUrl .= '?return=' . urlencode($currentPage);
         }
         
-        header('Location: ' . $loginUrl);
-        exit;
+        if (!headers_sent()) {
+            header('Location: ' . $loginUrl);
+        }
+        throw new Exception("User not logged in - redirect to login required");
     }
     
     // Make user data available to the page
@@ -45,8 +47,10 @@ try {
 } catch (Exception $e) {
     // If there's an authentication error, log it and redirect to login
     error_log('Authentication error: ' . $e->getMessage());
-    header('Location: login.php?error=auth_error');
-    exit;
+    if (!headers_sent()) {
+        header('Location: login.php?error=auth_error');
+    }
+    throw new Exception("Authentication error: " . $e->getMessage());
 }
 
 // Function to check if current user is admin
@@ -59,7 +63,7 @@ function requireAdmin() {
         echo '<p>You need administrator privileges to access this page.</p>';
         echo '<p><a href="index.php">Return to Dashboard</a></p>';
         echo '</body></html>';
-        exit;
+        throw new Exception("Access denied - admin privileges required");
     }
 }
 
