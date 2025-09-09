@@ -21,7 +21,6 @@ $dbDetails = [
     'config_source' => 'Legacy Database Configuration'
 ];
 
-$currentUser = getCurrentUser();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -84,12 +83,13 @@ $currentUser = getCurrentUser();
             border-radius: 6px;
         }
         .detail-item strong { color: #495057; }
+    </style>
+    <?php 
+    require_once __DIR__ . '/NavigationManager.php';
+    $navManager = new NavigationManager();
+    ?>
     <style>
-        <?php 
-        require_once __DIR__ . '/NavigationManager.php';
-        $navManager = new NavigationManager();
-        echo $navManager->getNavigationCSS(); 
-        ?>
+        <?php echo $navManager->getNavigationCSS(); ?>
     </style>
 </head>
 <body>

@@ -74,12 +74,13 @@ $isAdmin = $userAuth->isAdmin();
         .btn:hover { background: #0056b3; }
         .btn-refresh { background: #28a745; }
         .btn-refresh:hover { background: #1e7e34; }
+    </style>
+    <?php 
+    require_once __DIR__ . '/NavigationManager.php';
+    $navManager = new NavigationManager();
+    ?>
     <style>
-        <?php 
-        require_once __DIR__ . '/NavigationManager.php';
-        $navManager = new NavigationManager();
-        echo $navManager->getNavigationCSS(); 
-        ?>
+        <?php echo $navManager->getNavigationCSS(); ?>
     </style>
 </head>
 <body>
