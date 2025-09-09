@@ -13,6 +13,7 @@
 
 require_once __DIR__ . '/CommonDAO.php';
 require_once __DIR__ . '/SessionManager.php';
+require_once __DIR__ . '/AuthExceptions.php';
 
 class UserAuthDAO extends CommonDAO {
     
@@ -193,10 +194,7 @@ class UserAuthDAO extends CommonDAO {
      */
     public function requireLogin($redirectUrl = 'login.php') {
         if (!$this->isLoggedIn()) {
-            if (!headers_sent()) {
-                header("Location: $redirectUrl");
-            }
-            throw new Exception("User not logged in - redirect to login required");
+            throw new LoginRequiredException($redirectUrl, "User not logged in - login required");
         }
     }
     

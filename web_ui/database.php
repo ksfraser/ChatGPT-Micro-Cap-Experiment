@@ -4,12 +4,47 @@
  * Enhanced with real-time database connectivity checking
  */
 
-// Require authentication
-require_once 'auth_check.php';
-// Auth check automatically redirects if not logged in - no need to call requireLogin()
+try {
+    // Require authentication
+    require_once 'auth_check.php';
+    // Auth check automatically redirects if not logged in - no need to call requireLogin()
 
-// Include NavigationManager for consistent navigation
-require_once 'NavigationManager.php';
+    // Include NavigationManager for consistent navigation
+    require_once 'NavigationManager.php';
+    
+} catch (LoginRequiredException $e) {
+    // Handle login requirement
+    if (!headers_sent()) {
+        header('Location: ' . $e->getRedirectUrl());
+        exit;
+    } else {
+        // If headers already sent, show redirect message
+        $redirectUrl = htmlspecialchars($e->getRedirectUrl());
+        echo '<script>window.location.href="' . $redirectUrl . '";</script>';
+        echo '<noscript><meta http-equiv="refresh" content="0;url=' . $redirectUrl . '"></noscript>';
+        echo '<p>Please <a href="' . $redirectUrl . '">click here to login</a> if you are not redirected automatically.</p>';
+        exit;
+    }
+} catch (AdminRequiredException $e) {
+    // Handle admin requirement
+    http_response_code(403);
+    echo '<!DOCTYPE html><html><head><title>Access Denied</title></head><body>';
+    echo '<h1>Access Denied</h1>';
+    echo '<p>' . htmlspecialchars($e->getMessage()) . '</p>';
+    echo '<p><a href="index.php">Return to Dashboard</a></p>';
+    echo '</body></html>';
+    exit;
+} catch (AuthenticationException $e) {
+    // Handle other authentication errors
+    error_log('Authentication error in database.php: ' . $e->getMessage());
+    if (!headers_sent()) {
+        header('Location: login.php?error=auth_error');
+        exit;
+    } else {
+        echo '<p>Authentication error. Please <a href="login.php">click here to login</a>.</p>';
+        exit;
+    }
+}
 
 // Test database connectivity
 $dbStatus = 'disconnected';

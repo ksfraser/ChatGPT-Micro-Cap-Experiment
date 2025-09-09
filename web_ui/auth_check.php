@@ -4,6 +4,9 @@
  * Include this at the top of pages that require authentication
  */
 
+// Include custom authentication exceptions
+require_once __DIR__ . '/AuthExceptions.php';
+
 // Use centralized SessionManager
 require_once __DIR__ . '/SessionManager.php';
 
@@ -33,10 +36,7 @@ try {
             $loginUrl .= '?return=' . urlencode($currentPage);
         }
         
-        if (!headers_sent()) {
-            header('Location: ' . $loginUrl);
-        }
-        throw new Exception("User not logged in - redirect to login required");
+        throw new LoginRequiredException($loginUrl, "User not logged in - redirect to login required");
     }
     
     // Make user data available to the page
@@ -45,25 +45,23 @@ try {
     $isAdmin = $userAuth->isAdmin();
     
 } catch (Exception $e) {
-    // If there's an authentication error, log it and redirect to login
+    // If there's an authentication error, log it and throw appropriate exception
     error_log('Authentication error: ' . $e->getMessage());
-    if (!headers_sent()) {
-        header('Location: login.php?error=auth_error');
+    
+    if ($e instanceof AuthenticationException) {
+        // Re-throw authentication exceptions
+        throw $e;
+    } else {
+        // Wrap other exceptions in SessionException
+        throw new SessionException("Authentication system error: " . $e->getMessage());
     }
-    throw new Exception("Authentication error: " . $e->getMessage());
 }
 
 // Function to check if current user is admin
 function requireAdmin() {
     global $userAuth;
     if (!$userAuth->isAdmin()) {
-        http_response_code(403);
-        echo '<!DOCTYPE html><html><head><title>Access Denied</title></head><body>';
-        echo '<h1>Access Denied</h1>';
-        echo '<p>You need administrator privileges to access this page.</p>';
-        echo '<p><a href="index.php">Return to Dashboard</a></p>';
-        echo '</body></html>';
-        throw new Exception("Access denied - admin privileges required");
+        throw new AdminRequiredException("Access denied - administrator privileges required");
     }
 }
 
