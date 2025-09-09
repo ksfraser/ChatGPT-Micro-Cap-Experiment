@@ -15,10 +15,24 @@ abstract class CommonDAO {
     protected function connectDb() {
         try {
             require_once __DIR__ . '/DbConfigClasses.php';
+            
+            // Set a connection timeout to prevent hanging
+            $originalTimeout = ini_get('default_socket_timeout');
+            ini_set('default_socket_timeout', 5); // 5 second timeout
+            
             $this->pdo = $this->dbConfigClass::createConnection();
+            
+            // Restore original timeout
+            ini_set('default_socket_timeout', $originalTimeout);
+            
         } catch (Exception $e) {
             $this->pdo = null;
             $this->logError('DB connection failed: ' . $e->getMessage());
+            
+            // Restore original timeout in case of exception
+            if (isset($originalTimeout)) {
+                ini_set('default_socket_timeout', $originalTimeout);
+            }
         }
     }
 

@@ -7,6 +7,12 @@
 // Include custom authentication exceptions
 require_once __DIR__ . '/AuthExceptions.php';
 
+// Import the namespaced exception classes
+use App\Auth\AuthenticationException;
+use App\Auth\LoginRequiredException;
+use App\Auth\AdminRequiredException;
+use App\Auth\SessionException;
+
 // Use centralized SessionManager
 require_once __DIR__ . '/SessionManager.php';
 

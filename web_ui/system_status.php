@@ -2,50 +2,14 @@
 // system_status.php - System Status Dashboard
 // Displays system status and Python backend status
 
-// Include custom exceptions first
-require_once __DIR__ . '/AuthExceptions.php';
+require_once __DIR__ . '/UserAuthDAO.php';
 
-try {
-    // Require authentication
-    require_once __DIR__ . '/auth_check.php';
-    requireLogin(); // Admin not required for system status viewing
+// Check if user is logged in (will redirect if not)
+$userAuth = new UserAuthDAO();
+$userAuth->requireLogin(); // Admin not required for system status viewing
 
-    // Include NavigationManager for consistent navigation
-    require_once __DIR__ . '/NavigationManager.php';
-    
-} catch (LoginRequiredException $e) {
-    // Handle login requirement
-    if (!headers_sent()) {
-        header('Location: ' . $e->getRedirectUrl());
-        exit;
-    } else {
-        // If headers already sent, show redirect message
-        $redirectUrl = htmlspecialchars($e->getRedirectUrl());
-        echo '<script>window.location.href="' . $redirectUrl . '";</script>';
-        echo '<noscript><meta http-equiv="refresh" content="0;url=' . $redirectUrl . '"></noscript>';
-        echo '<p>Please <a href="' . $redirectUrl . '">click here to login</a> if you are not redirected automatically.</p>';
-        exit;
-    }
-} catch (AdminRequiredException $e) {
-    // Handle admin requirement
-    http_response_code(403);
-    echo '<!DOCTYPE html><html><head><title>Access Denied</title></head><body>';
-    echo '<h1>Access Denied</h1>';
-    echo '<p>' . htmlspecialchars($e->getMessage()) . '</p>';
-    echo '<p><a href="index.php">Return to Dashboard</a></p>';
-    echo '</body></html>';
-    exit;
-} catch (AuthenticationException $e) {
-    // Handle other authentication errors
-    error_log('Authentication error in system_status.php: ' . $e->getMessage());
-    if (!headers_sent()) {
-        header('Location: login.php?error=auth_error');
-        exit;
-    } else {
-        echo '<p>Authentication error. Please <a href="login.php">click here to login</a>.</p>';
-        exit;
-    }
-}
+$currentUser = $userAuth->getCurrentUser();
+$isAdmin = $userAuth->isAdmin();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -111,7 +75,11 @@ try {
         .btn-refresh { background: #28a745; }
         .btn-refresh:hover { background: #1e7e34; }
     <style>
-        <?php echo $navManager->getNavigationCSS(); ?>
+        <?php 
+        require_once __DIR__ . '/NavigationManager.php';
+        $navManager = new NavigationManager();
+        echo $navManager->getNavigationCSS(); 
+        ?>
     </style>
 </head>
 <body>
