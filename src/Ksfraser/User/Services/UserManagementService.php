@@ -68,4 +68,30 @@ class UserManagementService {
             return ['Error updating user: ' . $e->getMessage(), 'error'];
         }
     }
+    
+    /**
+     * Get all users with error handling
+     */
+    public function getAllUsers() {
+        try {
+            return $this->userAuth->getAllUsers();
+        } catch (\Exception $e) {
+            throw new \Exception('Error loading users: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Get user statistics
+     */
+    public function getUserStatistics($users) {
+        $totalUsers = count($users);
+        $adminUsers = count(array_filter($users, function($u) { return $u['is_admin']; }));
+        $activeUsers = count(array_filter($users, function($u) { return !empty($u['last_login']); }));
+        
+        return [
+            'total' => $totalUsers,
+            'admins' => $adminUsers,
+            'active' => $activeUsers
+        ];
+    }
 }

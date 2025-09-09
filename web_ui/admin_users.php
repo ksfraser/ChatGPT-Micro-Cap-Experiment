@@ -56,12 +56,17 @@ function handleUserManagementForms($userAuth, $currentUser) {
 // Handle form submissions
 list($message, $messageType) = handleUserManagementForms($userAuth, $currentUser);
 
-// Get all users
+// Initialize the service for data operations
+$service = new UserManagementService($userAuth, $currentUser);
+
+// Get all users using the service
 try {
-    $users = $userAuth->getAllUsers();
+    $users = $service->getAllUsers();
+    $userStats = $service->getUserStatistics($users);
 } catch (Exception $e) {
     $users = [];
-    $message = 'Error loading users: ' . $e->getMessage();
+    $userStats = ['total' => 0, 'admins' => 0, 'active' => 0];
+    $message = $e->getMessage();
     $messageType = 'error';
 }
 
@@ -129,19 +134,19 @@ if ($isAdminUser && !empty($menuItems)) {
         <h2>User Statistics</h2>
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number"><?php echo count($users); ?></div>
+                <div class="stat-number"><?php echo $userStats['total']; ?></div>
                 <div class="stat-label">Total Users</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number"><?php echo count(array_filter($users, function($u) { return $u['is_admin']; })); ?></div>
+                <div class="stat-number"><?php echo $userStats['admins']; ?></div>
                 <div class="stat-label">Administrators</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number"><?php echo count(array_filter($users, function($u) { return !$u['is_admin']; })); ?></div>
+                <div class="stat-number"><?php echo $userStats['total'] - $userStats['admins']; ?></div>
                 <div class="stat-label">Regular Users</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number"><?php echo count(array_filter($users, function($u) { return !empty($u['last_login']); })); ?></div>
+                <div class="stat-number"><?php echo $userStats['active']; ?></div>
                 <div class="stat-label">Active Users</div>
             </div>
         </div>
