@@ -4,6 +4,8 @@
  * Handles all session operations, retry data storage, and session-based error tracking
  */
 
+namespace App\Core;
+
 class SessionManager {
     private static $instance = null;
     private static $sessionStarted = false;

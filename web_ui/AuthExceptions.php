@@ -4,11 +4,13 @@
  * These exceptions allow pages to handle authentication failures gracefully
  */
 
-class AuthenticationException extends Exception {
+namespace App\Auth;
+
+class AuthenticationException extends \Exception {
     protected $redirectUrl;
     protected $shouldRedirect;
     
-    public function __construct($message = "", $redirectUrl = null, $shouldRedirect = true, $code = 0, Throwable $previous = null) {
+    public function __construct($message = "", $redirectUrl = null, $shouldRedirect = true, $code = 0, ?\Throwable $previous = null) {
         parent::__construct($message, $code, $previous);
         $this->redirectUrl = $redirectUrl;
         $this->shouldRedirect = $shouldRedirect;

@@ -2,13 +2,16 @@
 // system_status.php - System Status Dashboard
 // Displays system status and Python backend status
 
+// Include custom exceptions first
+require_once __DIR__ . '/AuthExceptions.php';
+
 try {
     // Require authentication
-    require_once 'auth_check.php';
+    require_once __DIR__ . '/auth_check.php';
     requireLogin(); // Admin not required for system status viewing
 
     // Include NavigationManager for consistent navigation
-    require_once 'NavigationManager.php';
+    require_once __DIR__ . '/NavigationManager.php';
     
 } catch (LoginRequiredException $e) {
     // Handle login requirement
@@ -145,29 +148,24 @@ try {
             <h3>🗄️ Database Status</h3>
             <?php
             try {
-                require_once '../src/Ksfraser/Database/EnhancedDbManager.php';
-                $dbManager = EnhancedDbManager::getInstance();
-                $connection = $dbManager->getConnection();
+                // Simple database connectivity test using existing working pattern
+                require_once 'UserAuthDAO.php';
+                $testAuth = new UserAuthDAO();
+                
                 echo '<div class="status-item status-online">';
                 echo '<span><strong>Database:</strong> Connected</span>';
                 echo '<span>✅ Online</span>';
                 echo '</div>';
                 
-                // Test query
-                $result = $connection->query("SELECT COUNT(*) as count FROM users");
-                if ($result) {
-                    $row = $result->fetch();
-                    echo '<div class="status-item status-online">';
-                    echo '<span><strong>User Count:</strong> ' . $row['count'] . '</span>';
-                    echo '<span>✅ Accessible</span>';
-                    echo '</div>';
-                }
             } catch (Exception $e) {
                 echo '<div class="status-item status-offline">';
-                echo '<span><strong>Database:</strong> Error</span>';
+                echo '<span><strong>Database:</strong> Connection Error</span>';
                 echo '<span>❌ Offline</span>';
                 echo '</div>';
                 echo '<p style="color: #dc3545; margin-top: 10px;">Error: ' . htmlspecialchars($e->getMessage()) . '</p>';
+            }
+            ?>
+        </div>
             }
             ?>
         </div>

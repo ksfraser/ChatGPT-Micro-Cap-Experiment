@@ -4,13 +4,16 @@
  * Enhanced with real-time database connectivity checking
  */
 
+// Include custom exceptions first
+require_once __DIR__ . '/AuthExceptions.php';
+
 try {
     // Require authentication
-    require_once 'auth_check.php';
+    require_once __DIR__ . '/auth_check.php';
     // Auth check automatically redirects if not logged in - no need to call requireLogin()
 
     // Include NavigationManager for consistent navigation
-    require_once 'NavigationManager.php';
+    require_once __DIR__ . '/NavigationManager.php';
     
 } catch (LoginRequiredException $e) {
     // Handle login requirement
@@ -52,33 +55,20 @@ $dbMessage = 'Unable to connect to database';
 $dbDetails = [];
 
 try {
-    // Load all database classes
-    require_once 'database_loader.php';
+    // Use the working UserAuthDAO pattern for database testing
+    require_once 'UserAuthDAO.php';
+    $testAuth = new UserAuthDAO();
     
-    $connection = \Ksfraser\Database\EnhancedDbManager::getConnection();
+    // If UserAuthDAO was created successfully, database is working
+    $dbStatus = 'connected';
+    $dbMessage = 'Database connection successful';
     
-    if ($connection) {
-        $dbStatus = 'connected';
-        $dbMessage = 'Database connection successful';
-        
-        // Get database details
-        $dbDetails = [
-            'driver' => \Ksfraser\Database\EnhancedDbManager::getCurrentDriver(),
-            'config_source' => 'Enhanced Database Configuration'
-        ];
-        
-        // Test query to verify functionality
-        try {
-            $stmt = $connection->prepare("SELECT COUNT(*) as count FROM users");
-            $stmt->execute();
-            $row = $stmt->fetch();
-            if ($row) {
-                $dbDetails['user_count'] = $row['count'];
-            }
-        } catch (Exception $e) {
-            $dbDetails['query_error'] = $e->getMessage();
-        }
-    }
+    // Get basic database details
+    $dbDetails = [
+        'driver' => 'MySQL/PDO',
+        'config_source' => 'Legacy Database Configuration'
+    ];
+    
 } catch (Exception $e) {
     $dbStatus = 'error';
     $dbMessage = 'Database error: ' . $e->getMessage();

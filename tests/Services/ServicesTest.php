@@ -33,9 +33,11 @@ function getNavManager()
 }
 
 // Mock headers_sent to prevent issues in testing
-function headers_sent()
-{
-    return false;
+if (!function_exists('headers_sent')) {
+    function headers_sent()
+    {
+        return false;
+    }
 }
 
 // Include the classes under test after setting up mocks
