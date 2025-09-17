@@ -30,7 +30,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Ksfraser\\Finance\\Tests\\": "tests/"
+            "Tests\\": "tests/"
         }
     },
     "scripts": {
