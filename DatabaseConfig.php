@@ -175,6 +175,57 @@ class DatabaseConfig
     }
     
     /**
+     * Get Finance package configuration
+     */
+    public static function getFinanceConfig()
+    {
+        // Load API configuration separately
+        require_once __DIR__ . '/ApiConfig.php';
+        
+        $dbConfig = self::getLegacyConfig(); // Use legacy DB for stock market data
+        $apiConfig = ApiConfig::load();
+        
+        // Get stock API configs
+        $alphavantageConfig = ApiConfig::getStockApiConfig('alphavantage');
+        $openaiConfig = ApiConfig::getAiApiConfig('openai');
+        $financeSettings = ApiConfig::getFinanceConfig();
+        
+        return [
+            'database' => [
+                'dsn' => sprintf(
+                    'mysql:host=%s;port=%d;dbname=%s;charset=%s',
+                    $dbConfig['host'],
+                    $dbConfig['port'] ?? 3306,
+                    $dbConfig['database'],
+                    $dbConfig['charset']
+                ),
+                'username' => $dbConfig['username'],
+                'password' => $dbConfig['password']
+            ],
+            'alphavantage' => [
+                'api_key' => $alphavantageConfig['api_key'] ?? '',
+                'base_url' => $alphavantageConfig['base_url'] ?? 'https://www.alphavantage.co/query',
+                'timeout' => $alphavantageConfig['timeout'] ?? 30
+            ],
+            'openai' => [
+                'api_key' => $openaiConfig['api_key'] ?? '',
+                'base_url' => $openaiConfig['base_url'] ?? 'https://api.openai.com/v1/chat/completions',
+                'model' => $openaiConfig['model'] ?? 'gpt-4',
+                'timeout' => $openaiConfig['timeout'] ?? 60
+            ],
+            'rate_limiting' => $financeSettings['rate_limiting'] ?? [
+                'delay_between_requests' => 500000,
+                'max_concurrent_requests' => 3
+            ],
+            'general' => $financeSettings['general'] ?? [
+                'max_retries' => 3,
+                'timeout' => 30,
+                'bulk_update_limit' => 100
+            ]
+        ];
+    }
+    
+    /**
      * Get application configuration
      */
     public static function getAppConfig()

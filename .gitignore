@@ -23,3 +23,6 @@ db_config.ini
 
 # Ignore bank import files
 /bank_imports/
+
+# Exclude development/temp finance directory
+src/Ksfraser/Finance/2000/

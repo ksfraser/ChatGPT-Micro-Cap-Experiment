@@ -19,6 +19,7 @@ database:
     database: stock_market_2
     
 # API Configuration (for external data sources)
+# Note: API keys and external service configs have been moved to api_config.yml
 apis:
   alpha_vantage:
     api_key: your_alpha_vantage_key

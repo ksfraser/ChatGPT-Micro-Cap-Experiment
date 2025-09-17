@@ -1,0 +1,78 @@
+# API Configuration
+# External service API keys and configurations
+# Copy this file to api_config.yml and update with your actual credentials
+
+# Stock Data APIs
+stock_apis:
+  alphavantage:
+    api_key: "your_alpha_vantage_api_key_here"
+    base_url: "https://www.alphavantage.co/query"
+    timeout: 30
+    rate_limit: 5  # requests per minute for free tier
+    
+  yahoo_finance:
+    enabled: true
+    timeout: 30
+    
+  twelve_data:
+    api_key: "your_twelve_data_api_key_here"
+    base_url: "https://api.twelvedata.com"
+    timeout: 30
+
+# AI/LLM APIs
+ai_apis:
+  openai:
+    api_key: "your_openai_api_key_here"
+    base_url: "https://api.openai.com/v1/chat/completions"
+    model: "gpt-4"
+    max_tokens: 1500
+    temperature: 0.3
+    timeout: 60
+    
+  claude:
+    api_key: "your_claude_api_key_here"
+    base_url: "https://api.anthropic.com"
+    model: "claude-3-sonnet-20240229"
+    timeout: 60
+
+# Financial Data APIs
+financial_apis:
+  bank_of_canada:
+    base_url: "https://www.bankofcanada.ca/valet"
+    timeout: 30
+    
+  fred:
+    api_key: "your_fred_api_key_here"
+    base_url: "https://api.stlouisfed.org/fred"
+    timeout: 30
+
+# Finance Package Settings
+finance:
+  rate_limiting:
+    delay_between_requests: 500000  # microseconds (500ms)
+    max_concurrent_requests: 3
+    
+  general:
+    max_retries: 3
+    timeout: 30
+    bulk_update_limit: 100
+    
+  features:
+    llm_analysis: true
+    historical_data: true
+    bulk_updates: true
+    market_overview: true
+
+# Notification APIs (for alerts)
+notifications:
+  email:
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    username: "your_email@gmail.com"
+    password: "your_app_password"
+    
+  discord:
+    webhook_url: "your_discord_webhook_url"
+    
+  slack:
+    webhook_url: "your_slack_webhook_url"
