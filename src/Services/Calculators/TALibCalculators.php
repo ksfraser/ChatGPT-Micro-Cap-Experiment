@@ -33,6 +33,20 @@ abstract class TALibCalculatorBase
     }
 
     /**
+     * Format error response
+     */
+    protected function formatError(string $errorType, string $message): array
+    {
+        return [
+            'error' => true,
+            'error_type' => $errorType,
+            'message' => $message,
+            'data' => [],
+            'calculation_engine' => 'TA-Lib'
+        ];
+    }
+
+    /**
      * Extract arrays from price data for TA-Lib functions
      */
     protected function extractArrays(array $priceData, array $fields): array
