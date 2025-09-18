@@ -10,6 +10,13 @@ Welcome to the repo behind my 6-month live trading experiment where ChatGPT mana
 - **`Start Your Own/`** - Template files and guide for starting your own experiment  
 - **`Weekly Deep Research (MD|PDF)/`** - Research summaries and performance reports
 - **`Experiment Details/`** - Documentation, methodology, prompts, and Q&A
+- **`StockTableManager.php`** - Enhanced database management with per-symbol table architecture
+- **`AdvancedTechnicalIndicators.php`** - Professional-grade technical analysis service
+- **`PortfolioRiskManager.php`** - Comprehensive risk analysis and portfolio optimization
+- **`ShannonAnalysis.php`** - Information theory-based market analysis
+- **`BacktestEngine.php`** - Advanced strategy backtesting framework
+- **`enhanced_architecture.md`** - System architecture documentation
+- **`legacy_software_analysis.md`** - Analysis of PERL financial software for feature enhancement
 
 # The Concept
 Every day, I kept seeing the same ad about having some A.I. pick undervalued stocks. It was obvious it was trying to get me to subscribe to some garbage, so I just rolled my eyes.  
@@ -19,11 +26,46 @@ So, starting with just $100, I wanted to answer a simple but powerful question:
 
 **Can powerful large language models like ChatGPT actually generate alpha (or at least make smart trading decisions) using real-time data?**
 
+## Enhanced Features
+
+### Advanced Technical Analysis
+- **50+ Professional Indicators** - ADX, Bollinger Bands, Stochastic, Aroon, Parabolic SAR, Shannon Probability
+- **Accuracy Tracking** - Statistical validation of indicator performance with confidence levels
+- **Multi-timeframe Analysis** - Support for different analytical periods and frequencies
+- **Trend Classification** - Automated trend direction detection and classification
+
+### Risk Management & Portfolio Optimization
+- **Value at Risk (VaR)** - 95% and 99% confidence levels with expected shortfall calculations
+- **Performance Metrics** - Sharpe, Sortino, Calmar ratios with statistical significance testing
+- **Correlation Analysis** - Advanced correlation matrices with multiple correlation types
+- **Drawdown Analysis** - Maximum drawdown tracking and recovery time analysis
+- **Beta/Alpha Calculations** - Market sensitivity and excess return analysis
+
+### Shannon Probability Analysis
+- **Information Theory** - Shannon probability calculations for market prediction
+- **Hurst Exponent** - Market persistence and mean reversion analysis
+- **Kelly Optimization** - Optimal position sizing using Kelly criterion
+- **Market Behavior Classification** - Persistent, anti-persistent, or random walk detection
+
+### Professional Backtesting
+- **Strategy Framework** - Configurable entry/exit conditions with position sizing
+- **Walk-Forward Analysis** - Time-based strategy validation with rolling windows
+- **Monte Carlo Simulation** - Statistical validation with thousands of scenarios
+- **Performance Attribution** - Detailed analysis of returns vs. benchmark performance
+- **Commission & Slippage** - Realistic trading cost modeling
+
+### Per-Symbol Database Architecture
+- **Scalable Design** - Each symbol gets individual tables for optimal performance
+- **Advanced Schema** - Enhanced fields for professional-grade analysis
+- **Backup Optimization** - Symbol-specific backup and restore capabilities
+- **Data Quality Tracking** - Comprehensive data validation and quality scoring
+
 ## Each trading day:
 
 - I provide it trading data on the stocks in its portfolio.  
-- Strict stop-loss rules apply.  
-- Every week I allow it to use deep research to reevaluate its account.  
+- Strict stop-loss rules apply with advanced risk metrics monitoring.
+- Every week I allow it to use deep research and advanced analytics to reevaluate its account.  
+- Enhanced performance tracking includes professional risk metrics and statistical analysis.
 - I track and publish performance data weekly on my blog: [Here](https://nathanbsmith729.substack.com)
 
 ## Research & Documentation
@@ -70,19 +112,64 @@ This project is an attempt to find out — with transparency, data, and a real b
 - **pandas + yFinance** - Market data fetching and analysis
 - **Matplotlib** - Performance visualization and charting
 - **ChatGPT-4** - AI-powered trading decision engine
+- **PHP** - Enhanced backend services for advanced analytics
+- **MySQL** - Per-symbol database architecture for scalable data management
+
+## Enhanced Financial Analysis Capabilities
+
+### Professional Technical Indicators
+- **Trend Indicators** - ADX (Average Directional Index), Aroon Oscillator, Parabolic SAR
+- **Momentum Indicators** - Stochastic Oscillator, Williams %R, CCI, Rate of Change
+- **Volume Indicators** - On-Balance Volume (OBV), Volume Rate of Change
+- **Volatility Indicators** - Bollinger Bands, Average True Range (ATR)
+- **Statistical Indicators** - Shannon Probability, Hurst Exponent for market persistence
+- **Accuracy Tracking** - Statistical validation with confidence levels and sample sizes
+
+### Advanced Risk Management
+- **Value at Risk (VaR)** - 95% and 99% confidence levels with expected shortfall
+- **Performance Ratios** - Sharpe, Sortino, Calmar ratios with statistical significance
+- **Beta/Alpha Analysis** - Market sensitivity and excess return calculations
+- **Correlation Analysis** - Multi-symbol correlation matrices with various correlation types
+- **Drawdown Analysis** - Maximum drawdown tracking and recovery time metrics
+- **Volatility Modeling** - Annualized volatility with skewness and kurtosis analysis
+
+### Shannon Probability Framework
+- **Information Theory Analysis** - Shannon entropy and probability calculations
+- **Market Persistence** - Hurst exponent for trend persistence vs. mean reversion
+- **Optimal Portfolio Allocation** - Kelly criterion-based position sizing
+- **Market Behavior Classification** - Persistent, anti-persistent, or random walk detection
+- **Accuracy Validation** - Statistical estimation of prediction accuracy
+
+### Professional Backtesting Engine
+- **Strategy Framework** - Configurable entry/exit rules with position sizing
+- **Walk-Forward Analysis** - Time-based validation with rolling optimization windows
+- **Monte Carlo Simulation** - Statistical validation with thousands of market scenarios
+- **Performance Attribution** - Detailed alpha/beta decomposition vs. benchmarks
+- **Realistic Cost Modeling** - Commission, slippage, and market impact simulation
+- **Risk-Adjusted Metrics** - Information ratio, tracking error, and attribution analysis
+
+### Database Architecture
+- **Per-Symbol Tables** - Individual tables per stock symbol for optimal performance
+- **Enhanced Schema** - Advanced fields for professional-grade analysis
+- **Multi-Exchange Support** - NYSE, NASDAQ, TSX, LSE with currency conversion
+- **Data Quality Tracking** - Comprehensive validation and quality scoring
+- **Backup Optimization** - Symbol-specific backup and restore capabilities
 
 ## Key Features
 - **Robust Data Sources** - Yahoo Finance primary, Stooq fallback for reliability
-- **Automated Stop-Loss** - Automatic position management with configurable stop-losses
-- **Interactive Trading** - Market-on-Open (MOO) and limit order support
-- **Backtesting Support** - ASOF_DATE override for historical analysis
-- **Performance Analytics** - CAPM analysis, Sharpe/Sortino ratios, drawdown metrics
-- **Trade Logging** - Complete transparency with detailed execution logs
+- **Automated Stop-Loss** - Advanced position management with risk metrics integration
+- **Interactive Trading** - Market-on-Open (MOO) and limit order support with slippage modeling
+- **Professional Backtesting** - Comprehensive strategy validation with statistical significance
+- **Performance Analytics** - CAPM analysis, multi-factor attribution, drawdown metrics
+- **Real-time Risk Monitoring** - Continuous VaR calculation and correlation tracking
+- **Trade Logging** - Complete transparency with detailed execution and performance logs
 
 ## System Requirements
 - **Python 3.7+** (3.11+ recommended)
+- **PHP 7.4+** (for enhanced analytics services)
+- **MySQL 8.0+** (for per-symbol database architecture)
 - Internet connection for market data
-- ~10MB storage for CSV data files
+- ~100MB storage for enhanced CSV and database files
 
 ## Installation
 
